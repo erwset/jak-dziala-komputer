@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>To, co widzisz · Jak działa komputer</title>
+<script src="../js/theme.js"></script>
+<link rel="stylesheet" href="../css/style.css">
+<script type="importmap">{"imports":{"three":"../vendor/three/build/three.module.js","three/addons/":"../vendor/three/examples/jsm/"}}</script>
+</head>
+<body data-chapter="a0">
+<main>
+  <p class="lead">Zaczynamy od tego, co znasz: piasek sypie się na ekranie. Kliknij jedno ziarnko. Będziemy je śledzić aż do pojedynczych elektronów w krzemie.</p>
+
+  <div class="frames">
+    <div><b>Skąd przychodzimy</b><p>Z Twojego ekranu. Tak wygląda symulacja w Blenderze albo w grze, tylko w bardzo uproszczonej wersji.</p></div>
+    <div><b>Co tu zobaczysz</b><p>Że ziarnko piasku to dla komputera zwykła garstka liczb.</p></div>
+    <div><b>Dokąd schodzimy</b><p>Do pamięci komputera: zobaczymy, gdzie dokładnie te liczby leżą.</p></div>
+  </div>
+
+  <div class="widget">
+    <p class="wt">Symulacja piasku na żywo: 2000 ziaren</p>
+    <div class="row">
+      <div class="grow" style="flex-basis:520px">
+        <div class="stage3d" id="stage"></div>
+        <p class="hint">Przeciągnij myszką albo palcem w bok, żeby obrócić. Kółko myszy albo rozsunięcie dwóch palców przybliża. Kliknij ziarnko, żeby je wybrać.</p>
+      </div>
+      <div class="grow" style="flex-basis:250px; max-width:330px">
+        <h3 style="margin-top:0">Wybrane ziarnko: <span id="gid" class="num">0</span></h3>
+        <table class="vals">
+          <tr><th colspan="2">Gdzie jest (pozycja)</th></tr>
+          <tr><td>lewo–prawo</td><td class="num" id="px"></td></tr>
+          <tr><td>wysokość</td><td class="num" id="py"></td></tr>
+          <tr><td>przód–tył</td><td class="num" id="pz"></td></tr>
+          <tr><th colspan="2">Jak szybko się rusza (prędkość)</th></tr>
+          <tr><td>w bok</td><td class="num" id="vx"></td></tr>
+          <tr><td>w górę / w dół</td><td class="num" id="vy"></td></tr>
+          <tr><td>w przód / w tył</td><td class="num" id="vz"></td></tr>
+        </table>
+        <p class="hint" id="status"></p>
+        <p class="hint">Klatka numer <span id="frame" class="num">0</span></p>
+      </div>
+    </div>
+    <div class="controls">
+      <button class="btn primary" id="again">Wsyp od nowa</button>
+      <button class="btn" id="pause">Zatrzymaj</button>
+      <button class="btn" id="one">Jedna klatka</button>
+      <button class="btn" id="rnd">Wybierz losowe ziarnko</button>
+    </div>
+  </div>
+
+  <section>
+    <h2>Co tak naprawdę widzisz</h2>
+    <p>Komputer nie ma w środku piasku. Nie ma też niczego, co by piasek przypominało. Ma <b>listę liczb</b>. Dla każdego ziarnka trzyma sześć: trzy mówią, gdzie ziarnko jest, a trzy, jak szybko i w którą stronę się porusza. To te same sześć liczb, które widzisz w tabelce obok sceny.</p>
+    <p>Kilkadziesiąt razy na sekundę komputer robi dwie rzeczy:</p>
+    <ol>
+      <li><b>Poprawia liczby.</b> Każde ziarnko dostaje odrobinę nowej pozycji i prędkości, według prostych reguł udających fizykę.</li>
+      <li><b>Rysuje obraz.</b> Stawia kropkę w miejscu, które wskazują liczby pozycji.</li>
+    </ol>
+    <p>Każdy taki obraz to jedna <span class="t" data-t="klatka">klatka</span>. Reszta dzieje się w Twojej głowie: kilkadziesiąt nieruchomych obrazów na sekundę mózg skleja w płynny ruch, tak samo jak przy filmie rysunkowym. Zatrzymaj symulację i klikaj „Jedna klatka", żeby zobaczyć, jak liczby wybranego ziarnka zmieniają się po kawałeczku.</p>
+
+    <div class="box key">
+      <span class="tag">Najczęstsze nieporozumienie</span>
+      <p>Łatwo sobie wyobrazić, że każde ziarnko ma „swoje miejsce" w procesorze, jakiś własny zestaw przełączników. <b>Tak nie jest.</b> Procesor ma jeden układ do dodawania (i kilka podobnych do innych działań). Ten sam układ bierze liczby pierwszego ziarnka, poprawia je, odkłada; bierze liczby drugiego, poprawia, odkłada; i tak dalej, po kolei, dla wszystkich. Jest po prostu niewyobrażalnie szybki.</p>
+    </div>
+
+    <details class="box quiz">
+      <summary>Na ekranie jest 2000 ziaren. Skąd komputer wie, które sześć liczb należy do którego ziarnka?</summary>
+      <p>Z kolejności. Liczby leżą w pamięci jedna za drugą: najpierw sześć liczb ziarnka numer 0, potem sześć liczb ziarnka numer 1 i tak dalej. „Ziarnko numer 137" to po prostu „sześć liczb zaczynających się w tym a tym miejscu". Dokładnie to zobaczysz w następnym rozdziale.</p>
+    </details>
+
+    <div class="box analogy">
+      <span class="tag">Analogia</span>
+      <p>Wyobraź sobie księgowego z jednym kalkulatorem i grubym zeszytem. W zeszycie każda linijka to jedno ziarnko. Księgowy bierze pierwszą linijkę, liczy na kalkulatorze, wpisuje nowe wartości, przechodzi do następnej. Kalkulator nie wie nic o piasku. Zeszyt też nie. Tylko to, <b>jak</b> księgowy korzysta z liczb, robi z nich piasek. Księgowym jest program, kalkulatorem procesor, zeszytem pamięć.</p>
+    </div>
+
+    <div class="box scale">
+      <span class="tag">Skala</span>
+      <p>Tutaj jest 2000 ziaren i jedna prosta reguła. Poważna symulacja piasku w Blenderze ma często <b>ponad milion</b> cząstek, a każda musi dodatkowo sprawdzać, czy nie wpada na sąsiadki. Na jedną klatkę składają się wtedy setki milionów drobnych działań na liczbach. Zwykły procesor wykonuje ich kilka miliardów na sekundę na każdym rdzeniu, a i tak taka symulacja potrafi liczyć się minutami.</p>
+    </div>
+
+    <details class="box simpl">
+      <summary>Co tu uprościłem</summary>
+      <p>Ziarnka w tej scenie nie zderzają się ze sobą w locie. Każde spada, a gdy dotknie stosu, zsuwa się po zboczu w najniższe miejsce obok i tam zostaje. Prawdziwe symulatory liczą zderzenia i tarcie między sąsiednimi ziarnkami, ale zasada jest ta sama: wszystko to dodawanie, mnożenie i porównywanie liczb.</p>
+    </details>
+  </section>
+</main>
+<script type="module" src="../js/chapters/a0.js"></script>
+</body>
+</html>

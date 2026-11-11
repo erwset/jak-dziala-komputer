@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Komputery kwantowe · Jak działa komputer</title>
+<script src="../js/theme.js"></script>
+<link rel="stylesheet" href="../css/style.css">
+<script type="importmap">{"imports":{"three":"../vendor/three/build/three.module.js","three/addons/":"../vendor/three/examples/jsm/"}}</script>
+<style>
+  .bars { display: grid; grid-template-columns: 150px 1fr 78px; gap: 6px 12px; align-items: center; font-size: .92rem; white-space: nowrap; }
+  .bars .bar { height: 18px; border-radius: 5px; background: var(--on); min-width: 2px; transition: width .2s; }
+  .bars .bar.b2 { background: var(--electron); }
+  .trio { display: grid; gap: 12px; }
+  .trio > div { background: var(--panel2); border-radius: 12px; padding: 12px 14px; }
+  .trio h3 { margin: 0 0 2px; font-size: 1rem; } .trio p { margin: 0 0 8px; font-size: .86rem; color: var(--muted); }
+  .res2 { display: grid; grid-template-columns: 70px 1fr 44px; gap: 4px 10px; align-items: center; font-size: .9rem; }
+  .res2 .bar { height: 14px; border-radius: 4px; background: var(--on); min-width: 2px; transition: width .2s; }
+  .circ2 { display: flex; gap: 6px; flex-wrap: wrap; min-height: 40px; align-items: center; padding: 8px 10px; background: var(--panel2); border-radius: 10px; }
+  .circ2 span { background: var(--accent-soft); border: 1px solid var(--accent); border-radius: 7px; padding: 3px 10px; font-size: .86rem; }
+  .circ2 em { color: var(--muted); font-size: .86rem; }
+  table.cmp td, table.cmp th { vertical-align: top; padding: 7px 12px; font-size: .92rem; }
+  table.cmp th:first-child, table.cmp td:first-child { color: var(--muted); width: 22%; }
+</style>
+</head>
+<body data-chapter="q">
+<main>
+  <p class="lead">Wszystko, co do tej pory widziałeś, opierało się na jednej rzeczy: bit jest zerem albo jedynką i zawsze da się sprawdzić, którym. Komputer kwantowy porzuca właśnie to założenie. Nie jest „szybszym komputerem". Jest innym rodzajem maszyny, dobrym do kilku bardzo szczególnych zadań i bezużytecznym do reszty.</p>
+
+  <div class="frames">
+    <div><b>Skąd przychodzimy</b><p>Ze zwykłego komputera: bit to kilkaset elektronów pod bramką tranzystora, pewne zero albo pewna jedynka.</p></div>
+    <div><b>Co tu zobaczysz</b><p>Kubit, który możesz obracać i mierzyć, oraz dwie rzeczy, których zwykły bit nie potrafi.</p></div>
+    <div><b>Co z tego wynika</b><p>Do czego taka maszyna się nadaje, do czego nie i dlaczego tak trudno ją zbudować.</p></div>
+  </div>
+
+  <section>
+    <h2>Bit i kubit</h2>
+    <div class="box analogy">
+      <span class="tag">Analogia</span>
+      <p>Zwykły bit jest jak moneta leżąca na stole: orzeł albo reszka. Możesz na nią spojrzeć sto razy i zawsze zobaczysz to samo. <span class="t" data-t="kubit">Kubit</span> jest jak moneta wirująca na kancie. Póki wiruje, nie jest ani orłem, ani reszką. Dopiero gdy przyłożysz do niej dłoń, pada na jedną stronę. Analogia kuleje w jednym ważnym miejscu, do którego dojdziemy za chwilę: wirująca moneta jest po prostu „nieznana", a kubit ma w sobie coś więcej.</p>
+    </div>
+
+    <p>Stan kubitu wygodnie narysować jako strzałkę wewnątrz kuli. Strzałka w górę to zero. Strzałka w dół to jedynka. Wszystkie położenia pośrednie są dozwolone. Im bliżej góry, tym większa szansa, że przy pomiarze wypadnie zero. Na równiku szanse są równe.</p>
+
+    <div class="widget">
+      <p class="wt">Jeden kubit. Obracaj kulę myszką albo palcem i naciskaj przyciski</p>
+      <div class="row">
+        <div class="grow" style="flex-basis:380px"><div class="stage3d" id="sphere" style="height:380px"></div></div>
+        <div class="grow" style="flex-basis:280px">
+          <div class="bars">
+            <span>szansa na 0</span><div class="bar" id="p0"></div><span class="num" id="p0t"></span>
+            <span>szansa na 1</span><div class="bar b2" id="p1"></div><span class="num" id="p1t"></span>
+          </div>
+          <div class="controls">
+            <button class="btn" data-g="X">Odwróć</button>
+            <button class="btn" data-g="H">Pół drogi</button>
+            <button class="btn" data-g="Z">Obróć wokół osi</button>
+          </div>
+          <div class="controls">
+            <button class="btn primary" id="measure">Zmierz</button>
+            <button class="btn" id="m100">Przygotuj i zmierz 100 razy</button>
+            <button class="btn" id="qreset">Od nowa</button>
+          </div>
+          <p class="hint" id="hist"></p>
+        </div>
+      </div>
+      <div class="say" id="qSay"></div>
+    </div>
+
+    <p>Trzy przyciski to trzy „bramki kwantowe", odpowiedniki bramek logicznych. Każda obraca strzałkę w ściśle określony sposób:</p>
+    <ul>
+      <li><b>Odwróć</b> zamienia górę z dołem. Dla strzałki stojącej pionowo działa jak zwykła bramka NIE.</li>
+      <li><b>Pół drogi</b> przenosi strzałkę z bieguna na równik. To ona robi z pewnego zera stan „pół na pół". Nie ma odpowiednika w zwykłym komputerze.</li>
+      <li><b>Obróć wokół osi</b> przekręca strzałkę wokół pionowej osi kuli. Szanse się nie zmieniają, ale zmienia się to, co zrobi następna bramka. Spróbuj: „Od nowa", „Pół drogi", „Obróć wokół osi", „Pół drogi".</li>
+    </ul>
+    <p>I najważniejsze: <b>strzałki nie da się zobaczyć</b>. Jedyne, co można zrobić z prawdziwym kubitem, to go zmierzyć, a pomiar zawsze daje zwykłe 0 albo 1 i przy okazji niszczy stan: strzałka przeskakuje na biegun. Żeby poznać szanse, trzeba przygotować ten sam stan wiele razy i za każdym razem zmierzyć.</p>
+
+    <h2>To nie jest zwykła losowość</h2>
+    <p>Do tej pory kubit wygląda jak wymyślna moneta: wynik jest losowy i tyle. Gdyby na tym się kończyło, komputer kwantowy byłby drogą maszynką do rzucania monetą. Różnica wychodzi na jaw, gdy zrobisz dwie rzeczy pod rząd.</p>
+
+    <div class="widget">
+      <p class="wt">Trzy doświadczenia, każde powtarzane sto razy</p>
+      <div class="trio">
+        <div><h3>Zwykła moneta</h3><p>Rzuć monetą. Potem rzuć nią jeszcze raz. Zobacz, co wypadło.</p><div class="res2" id="eCoin"></div></div>
+        <div><h3>Kubit</h3><p>Zacznij od zera. Naciśnij „Pół drogi". Naciśnij „Pół drogi" jeszcze raz. Zmierz.</p><div class="res2" id="eQ"></div></div>
+        <div><h3>Kubit podglądany w połowie</h3><p>Zacznij od zera. „Pół drogi". <b>Zmierz</b>. „Pół drogi". Zmierz.</p><div class="res2" id="eQm"></div></div>
+      </div>
+      <div class="controls"><button class="btn primary" id="runExp">Wykonaj każde 100 razy</button></div>
+      <div class="say" id="eSay">Zanim klikniesz: po pierwszym „Pół drogi" kubit jest pół na pół. Co będzie po drugim?</div>
+    </div>
+
+    <p>Dwa rzuty monetą dają losowy wynik. Dwie bramki „Pół drogi" dają <b>zawsze zero</b>. Losowość zniknęła. A jeśli w połowie zajrzysz, co wyszło, wraca. To pokazuje, że kubit na równiku nie jest „zerem albo jedynką, tylko nie wiemy którym". Jest czymś trzecim, co pamięta, skąd przyszło, i potrafi tam wrócić.</p>
+
+    <div class="box analogy">
+      <span class="tag">Analogia</span>
+      <p>Pomyśl o falach na wodzie. Gdy spotkają się dwa grzbiety, fala rośnie. Gdy grzbiet spotka dolinę, znoszą się i woda jest płaska. Możliwości w kubicie zachowują się jak fale, a nie jak zwykłe szanse: mogą się <b>wzmacniać i znosić</b>. Po dwóch bramkach „Pół drogi" droga do jedynki znosi się sama ze sobą i zostaje tylko zero. Cała sztuka obliczeń kwantowych polega na takim ułożeniu bramek, żeby błędne odpowiedzi się zniosły, a dobra została.</p>
+    </div>
+
+    <h2>Dwa kubity i splątanie</h2>
+    <p>Druga rzecz, której zwykłe bity nie potrafią, pojawia się przy dwóch kubitach. Jest bramka działająca na parę: <b>jeśli pierwszy kubit jest jedynką, odwróć drugi</b>. Na zwykłych bitach to nic ciekawego. Ale co, jeśli pierwszy kubit jest akurat „pół na pół"?</p>
+
+    <div class="widget">
+      <p class="wt">Dwa kubity, oba zaczynają jako zero. Ułóż ciąg bramek</p>
+      <div class="controls" style="margin:0 0 8px">
+        <button class="btn" data-add="H0">Pół drogi na pierwszym</button>
+        <button class="btn" data-add="H1">Pół drogi na drugim</button>
+        <button class="btn" data-add="X0">Odwróć pierwszy</button>
+        <button class="btn" data-add="X1">Odwróć drugi</button>
+        <button class="btn" data-add="C">Jeśli pierwszy to 1, odwróć drugi</button>
+      </div>
+      <div class="circ2" id="circ"></div>
+      <div class="controls">
+        <button class="btn primary" data-preset="H0,C">Przykład: splątanie</button>
+        <button class="btn" data-preset="H0,H1">Przykład: dwie niezależne monety</button>
+        <button class="btn" id="cclear">Wyczyść</button>
+        <button class="btn" id="c100">Zmierz 100 razy</button>
+      </div>
+      <div class="bars" style="margin-top:12px" id="out2"></div>
+      <div class="say" id="cSay"></div>
+    </div>
+
+    <p>W przykładzie „splątanie" każdy kubit z osobna wypada losowo, zero albo jedynka, pół na pół. Ale <b>zawsze oba tak samo</b>. Nigdy jeden zero, a drugi jedynka. To jest <span class="t" data-t="splatanie">splątanie</span>: para ma wspólny, dobrze określony stan („jesteśmy tacy sami"), choć żaden z kubitów z osobna nie ma określonego stanu. I pozostaje to prawdą, nawet jeśli kubity rozdzieli się i zmierzy bardzo daleko od siebie.</p>
+
+    <details class="box quiz">
+      <summary>Czy splątania da się użyć do przesyłania wiadomości szybciej niż światło?</summary>
+      <p>Nie. Każda ze stron widzi u siebie zwykły losowy ciąg zer i jedynek i nie ma na niego żadnego wpływu. To, że ciągi są identyczne, wychodzi na jaw dopiero wtedy, gdy obie strony je porównają, a do tego muszą się skontaktować zwykłą drogą. Splątanie to powiązanie wyników, a nie kanał łączności.</p>
+    </details>
+
+    <h2>Skąd bierze się moc</h2>
+    <p>Żeby opisać stan jednego kubitu, wystarczą dwie liczby (jak mocno jest zerem, jak mocno jedynką). Dwa kubity mają cztery możliwe wyniki, więc potrzeba czterech liczb. Trzy kubity: ośmiu. Każdy dodatkowy kubit <b>podwaja</b> liczbę liczb potrzebnych do opisu, bo przez splątanie stanu całości nie da się rozłożyć na stany części.</p>
+
+    <div class="widget">
+      <p class="wt">Ile liczb trzeba, żeby zwykły komputer mógł udawać kwantowy</p>
+      <label class="sl">Liczba kubitów <input type="range" id="nq" min="1" max="60" value="10" style="width:300px"> <span class="num" id="nqTxt"></span></label>
+      <div class="say" id="nqSay"></div>
+    </div>
+
+    <p>To jest źródło mocy: kilkadziesiąt kubitów niesie w sobie więcej liczb, niż pomieści jakikolwiek zwykły komputer, a każda bramka kwantowa zmienia je wszystkie naraz. I zarazem źródło głównego nieporozumienia.</p>
+
+    <details class="box quiz">
+      <summary>Często słyszy się, że komputer kwantowy „sprawdza wszystkie odpowiedzi naraz". Dlaczego to nieprawda?</summary>
+      <p>Bo na końcu trzeba zmierzyć, a pomiar daje <b>jeden</b> wynik, wylosowany zgodnie z szansami. Gdyby wszystkie odpowiedzi były po prostu „obecne naraz" z równymi szansami, dostałbyś losową z nich, czyli nic lepszego niż zgadywanie. Cała trudność polega na wymyśleniu takiego ciągu bramek, żeby dzięki znoszeniu się fal błędne odpowiedzi prawie zniknęły, a dobra dostała prawie całą szansę. Takich sprytnych ciągów znamy niewiele i każdy pasuje tylko do zadań o bardzo szczególnej budowie. Dlatego komputer kwantowy nie przyspiesza „wszystkiego".</p>
+    </details>
+
+    <h2>Zwykły komputer i kwantowy obok siebie</h2>
+    <table class="vals cmp">
+      <tr><th></th><th>Zwykły komputer</th><th>Komputer kwantowy</th></tr>
+      <tr><td>Podstawowa cegiełka</td><td>Bit: pewne zero albo pewna jedynka.</td><td>Kubit: strzałka w kuli, dowolne położenie między zerem a jedynką.</td></tr>
+      <tr><td>Odczyt</td><td>Można czytać dowolnie wiele razy, nic się nie psuje.</td><td>Pomiar daje losowe 0 albo 1 i niszczy stan.</td></tr>
+      <tr><td>Kopiowanie</td><td>Bit kopiuje się bez ograniczeń (tak działa cała pamięć).</td><td>Nieznanego stanu kubitu nie da się skopiować. To prawo fizyki, nie niedoróbka.</td></tr>
+      <tr><td>Wiele cegiełek naraz</td><td>Każdy bit ma własny stan, niezależny od innych.</td><td>Kubity mogą być splątane: stan ma dopiero całość.</td></tr>
+      <tr><td>Odporność</td><td>Jedynka to tłum elektronów. Kilka w tę czy w tę niczego nie zmienia, a każda bramka czyści sygnał.</td><td>Stan to jeden delikatny obiekt. Byle drganie albo ciepło go psuje.</td></tr>
+      <tr><td>Warunki pracy</td><td>Temperatura pokojowa, kieszeń, plecak.</td><td>Najczęściej temperatura bliska zera absolutnego, próżnia, osłony.</td></tr>
+      <tr><td>Wynik</td><td>Zawsze ten sam dla tych samych danych.</td><td>Losowy; program układa się tak, żeby dobra odpowiedź wypadała z dużą szansą, i często powtarza.</td></tr>
+    </table>
+
+    <h2>Do czego się nadaje, a do czego nie</h2>
+    <p><b>Nadaje się</b> do zadań, w których da się wykorzystać znoszenie się fal:</p>
+    <ul>
+      <li><b>Symulowanie cząsteczek i materiałów.</b> Atomy same podlegają tym samym prawom co kubity, więc kubitami naśladuje się je naturalnie. To może pomóc projektować leki, nawozy czy baterie. Zwykły komputer dławi się na tym z powodu podwajania, które widziałeś na suwaku.</li>
+      <li><b>Rozkładanie wielkich liczb na czynniki.</b> Na trudności tego zadania opiera się spora część dzisiejszego szyfrowania. Dostatecznie duży komputer kwantowy by je złamał, dlatego już teraz wprowadza się nowe szyfry, odporne na taki atak.</li>
+      <li><b>Niektóre przeszukiwania i optymalizacje.</b> Tu zysk jest skromniejszy: zamiast miliona kroków około tysiąca.</li>
+    </ul>
+    <p><b>Nie nadaje się</b> do niczego, co zwykły komputer robi dobrze: wyświetlania stron, gier, arkuszy, baz danych, symulacji piasku. Nie przyspieszy też w oczywisty sposób modeli językowych. Jeśli komputery kwantowe się upowszechnią, to najpewniej jako wyspecjalizowane dodatki, do których zwykły komputer wysyła wybrane fragmenty obliczeń, podobnie jak dziś wysyła mnożenia do karty graficznej.</p>
+
+    <h2>Z czego to jest zrobione i dlaczego takie trudne</h2>
+    <p>Kubitem może być wszystko, co ma dwa stany i zachowuje się kwantowo. W praktyce buduje się je głównie na trzy sposoby: z maleńkich nadprzewodzących obwodów, w których prąd płynie bez oporu; z pojedynczych atomów zawieszonych w próżni i sterowanych laserami; ze światła. Najbardziej znane maszyny, te wyglądające jak złoty żyrandol, to pierwszy rodzaj. „Żyrandol" jest lodówką, która schładza układ do temperatury około jednej setnej stopnia powyżej zera absolutnego, czyli dużo niższej niż w pustej przestrzeni kosmicznej.</p>
+    <p>Po co ten chłód? Przypomnij sobie dno naszej podróży: zwykła jedynka to kilkaset elektronów i żadne drobne zakłócenie jej nie ruszy. Kubit to jeden delikatny stan. Każde drganie, każda odrobina ciepła, każde zabłąkane pole działa jak przypadkowy pomiar i psuje obliczenie. Kubity „wytrzymują" od ułamków tysięcznej części sekundy do kilku sekund, zależnie od rodzaju, i w tym czasie trzeba zmieścić cały program.</p>
+    <p>Rozwiązaniem jest nadmiar: jeden niezawodny kubit składa się z setek zwykłych, które nawzajem się pilnują i poprawiają. Dzisiejsze maszyny mają od kilkuset do kilku tysięcy kubitów fizycznych, a do złamania używanych dziś szyfrów trzeba by ich, według obecnych szacunków, setek tysięcy albo milionów. Dlatego mimo realnych postępów komputery kwantowe są wciąż głównie urządzeniami badawczymi.</p>
+
+    <details class="box quiz">
+      <summary>Czy za kilka lat w laptopach będą procesory kwantowe?</summary>
+      <p>Wszystko wskazuje na to, że nie, i nie chodzi tylko o lodówkę. Zwykły procesor jest do zwykłych zadań po prostu lepszy: tani, szybki, niezawodny, a każdy jego wynik da się skopiować i sprawdzić. Komputer kwantowy nie jest następcą zwykłego, tak jak mikroskop nie jest następcą okularów. To narzędzie do innych zadań.</p>
+    </details>
+
+    <div class="box key">
+      <span class="tag">Zapamiętaj</span>
+      <p>Zwykły komputer bierze fizykę i robi wszystko, żeby zachowywała się prosto: tłum elektronów, wyraźne zero, wyraźna jedynka, każda bramka czyści sygnał. Komputer kwantowy robi odwrotnie: stara się <b>nie zepsuć</b> tego, co w fizyce dziwne, czyli stanów pośrednich, znoszenia się możliwości i splątania, i użyć tego do liczenia. Dlatego jeden jest wszędzie, a drugi stoi w laboratorium.</p>
+    </div>
+
+    <div class="box scale">
+      <span class="tag">Skala</span>
+      <p>Pięćdziesiąt idealnych kubitów ma stan opisany przez ponad biliard liczb, czyli więcej, niż mieści pamięć największych superkomputerów. Trzysta idealnych kubitów wymagałoby więcej liczb, niż jest atomów w widzialnym wszechświecie. Jednocześnie dzisiejsze kubity mylą się mniej więcej raz na kilkaset do kilku tysięcy bramek, podczas gdy tranzystor w zwykłym procesorze myli się rzadziej niż raz na biliard przełączeń.</p>
+    </div>
+
+    <details class="box simpl">
+      <summary>Co tu uprościłem</summary>
+      <p>Strzałka w kuli w pełni opisuje tylko jeden samotny kubit; stanu dwóch splątanych kubitów nie da się narysować jako dwóch strzałek i dlatego w drugiej zabawce pokazuję same szanse wyników. Mówię „szanse" i „fale", a ścisły opis używa liczb, które mają nie tylko wielkość, ale i kierunek, i to właśnie różnica kierunków decyduje, czy możliwości się wzmocnią, czy zniosą. Przycisk „Obróć wokół osi" jest jedną z wielu możliwych bramek tego rodzaju. Pominąłem też cały temat tego, jak fizycznie wykonuje się bramkę (odpowiednio dobranym impulsem mikrofal albo lasera) i jak odczytuje się wynik.</p>
+    </details>
+  </section>
+</main>
+<script type="module" src="../js/chapters/q.js"></script>
+</body>
+</html>

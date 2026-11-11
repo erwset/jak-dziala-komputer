@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tekst jako liczby · Jak działa komputer</title>
+<script src="../js/theme.js"></script>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  #inp { width: 100%; font: inherit; font-size: 1.05rem; padding: 9px 12px; border-radius: 9px; border: 1px solid var(--line); background: var(--panel2); color: var(--ink); }
+  .toks { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 12px; }
+  .tok { border-radius: 7px; padding: 4px 9px 3px; text-align: center; font: 600 1rem var(--mono); color: #14171d; }
+  .tok small { display: block; font: 500 .66rem var(--mono); opacity: .75; }
+  .tok.sp { margin-left: 10px; }
+</style>
+</head>
+<body data-chapter="c1">
+<main>
+  <p class="lead">Procesor nie zna liter, a tym bardziej znaczeń. Zna liczby. Żeby model mógł cokolwiek policzyć, tekst trzeba najpierw na liczby zamienić, i to tak sprytnie, żeby podobne słowa dostały podobne liczby.</p>
+
+  <div class="frames">
+    <div><b>Skąd przychodzimy</b><p>Z pętli: tekst wchodzi, szanse na następny kawałek wychodzą.</p></div>
+    <div><b>Co tu zobaczysz</b><p>Dwa przekłady: tekst na numery kawałków, a numery na listy liczb, które niosą znaczenie.</p></div>
+    <div><b>Dokąd schodzimy</b><p>Do działań, które model wykonuje na tych listach.</p></div>
+  </div>
+
+  <section>
+    <h2>Krok pierwszy: pociąć tekst na kawałki</h2>
+    <p>Najprościej byłoby dać każdemu słowu numer. Ale słów jest nieskończenie wiele: nowe nazwy, literówki, odmiany. Dlatego model tnie tekst na <span class="t" data-t="token">tokeny</span>: kawałki, z których da się złożyć wszystko. Częste słowa są jednym tokenem. Rzadsze rozpadają się na kilka. W ostateczności zawsze zostają pojedyncze litery. Każdy token ma swój stały numer.</p>
+
+    <div class="widget">
+      <p class="wt">Wpisz dowolny tekst i zobacz, jak rozpada się na tokeny</p>
+      <input id="inp" value="Komputery nie rozumieją słów, liczą bardzo szybko" spellcheck="false">
+      <div class="controls">
+        <button class="btn" data-t="Komputery nie rozumieją słów, liczą bardzo szybko">Zwykłe zdanie</button>
+        <button class="btn" data-t="Superhiperkomputerowanie">Słowo, którego nie ma</button>
+        <button class="btn" data-t="kot kota kotem kotami">Odmiana</button>
+        <button class="btn" data-t="xqzv 2026">Bezsens i liczby</button>
+      </div>
+      <div class="toks" id="toks"></div>
+      <div class="say" id="tokSay"></div>
+    </div>
+
+    <p>Od tej chwili model nie widzi już liter. Zdanie to dla niego ciąg numerów, na przykład „12, 87, 3, 40, 91". I to te numery, a nie słowa, są „kawałkami", które model dopisywał w poprzednim rozdziale.</p>
+
+    <details class="box quiz">
+      <summary>Kliknij „Słowo, którego nie ma". Model nigdy nie widział takiego słowa. Czy to dla niego problem?</summary>
+      <p>Nie, i właśnie po to są tokeny. Słowo rozpada się na znane kawałki, a w najgorszym razie na pojedyncze litery, więc model zawsze ma z czego je złożyć. Cena jest taka, że dziwne słowo zajmuje dużo tokenów, a model ma ograniczoną liczbę tokenów, które mieści „w głowie" naraz. Dlatego limity i ceny modeli podaje się w tokenach, a nie w słowach, a polski tekst, pełen długich odmienionych słów, zużywa ich zwykle więcej niż angielski.</p>
+    </details>
+
+    <h2>Krok drugi: z numeru na znaczenie</h2>
+    <p>Sam numer tokenu nic nie mówi. To, że „kot" ma numer 12, a „pies" 87, jest przypadkiem. Dlatego model ma w środku wielką tabelę: dla każdego tokenu jeden wiersz, a w nim <b>lista liczb</b>, która opisuje ten token. Pierwsza rzecz, jaką model robi z numerem, to zamiana go na tę listę.</p>
+    <p>Listę liczb można sobie wyobrazić jako położenie na mapie. Na mapie poniżej każde słowo ma dwie liczby: jak daleko w prawo i jak wysoko. Ułożono je tak, że słowa o podobnym znaczeniu leżą blisko siebie.</p>
+
+    <div class="widget">
+      <p class="wt">Mapa znaczeń. Kliknij słowo, żeby zobaczyć jego liczby i sąsiadów</p>
+      <div class="hs"><canvas class="c2d" id="map" style="--minw:560px"></canvas></div>
+      <div class="controls"><button class="btn" id="arrows">Pokaż kierunek „z męskiego na żeńskie"</button></div>
+      <div class="say" id="mapSay"></div>
+    </div>
+
+    <p>Zwróć uwagę na dwie rzeczy. Po pierwsze, słowa same pogrupowały się w kupki: zwierzęta, kolory, liczby, części komputera. Po drugie, <b>kierunki coś znaczą</b>. Włącz strzałki: przejście od „mężczyzna" do „kobieta" to taki sam ruch na mapie jak od „król" do „królowa". Model nie ma osobnego pojęcia „płeć". Ma liczby, w których ta zależność jest zapisana jako przesunięcie.</p>
+
+    <div class="box analogy">
+      <span class="tag">Analogia</span>
+      <p>Pomyśl o współrzędnych na mapie świata. Dwie liczby mówią, gdzie leży miasto, i z samych liczb widać, że Kraków jest blisko Katowic, a daleko od Tokio, choć nikt tego nigdzie nie zapisał wprost. Listy liczb w modelu działają tak samo, tylko „mapa" ma nie dwa wymiary, lecz kilka tysięcy. Takiej mapy nie da się narysować ani sobie wyobrazić, ale liczy się na niej identycznie.</p>
+    </div>
+
+    <details class="box quiz">
+      <summary>Kto ustalił, gdzie na mapie ma leżeć „kot"?</summary>
+      <p>Nikt. Na początku uczenia wszystkie tokeny dostają losowe liczby. Potem model czyta ogromne ilości tekstu i po każdym błędzie w przewidywaniu następnego kawałka odrobinę przesuwa liczby tak, żeby następnym razem pomylić się mniej. „Kot" i „pies" pojawiają się w podobnych zdaniach (śpi, je, biegnie), więc przydaje się, żeby miały podobne liczby, i z czasem same się do siebie zbliżają. Mapa powstaje jako efekt uboczny uczenia się przewidywania tekstu. Na tej stronie ułożyłem ją ręcznie, żeby było co pokazać.</p>
+    </details>
+
+    <div class="box key">
+      <span class="tag">Zapamiętaj</span>
+      <p>Na wejściu modelu nie ma tekstu. Jest tabela liczb: tyle wierszy, ile tokenów w rozmowie, a w każdym wierszu kilka tysięcy liczb opisujących jeden token. To znowu skrytki w pamięci, dokładnie jak liczby ziarnka piasku. „Znaczenie" słowa to dla komputera położenie pewnego punktu.</p>
+    </div>
+
+    <div class="box scale">
+      <span class="tag">Skala</span>
+      <p>Typowy duży model zna około stu tysięcy tokenów, a każdy opisuje listą kilku tysięcy liczb. Sama tabela startowa to więc kilkaset milionów liczb, czyli ponad gigabajt pamięci, zanim model zacznie cokolwiek liczyć. Rozmowa na kilka stron to kilka tysięcy tokenów, czyli tabela wejściowa z kilkunastoma milionami liczb.</p>
+    </div>
+
+    <details class="box simpl">
+      <summary>Co tu uprościłem</summary>
+      <p>Mój krajalnik tekstu ma maleńki, ręcznie ułożony zestaw kawałków. Prawdziwy zestaw powstaje automatycznie: program liczy, które zlepki liter najczęściej występują obok siebie w ogromnym zbiorze tekstów, i skleja je w tokeny, aż uzbiera ich zadaną liczbę. Tokeny zwykle zawierają też spację przed słowem, a wielkie litery i polskie znaki bywają cięte mniej elegancko niż tutaj. Poza położeniem na „mapie" model dokłada do każdego tokenu informację o tym, które to z kolei miejsce w tekście, bo inaczej „pies goni kota" i „kota goni pies" wyglądałyby dla niego jednakowo.</p>
+    </details>
+  </section>
+</main>
+<script type="module" src="../js/chapters/c1.js"></script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Porównaj i zdecyduj · Jak działa komputer</title>
+<script src="../js/theme.js"></script>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body data-chapter="b3">
+<main>
+  <p class="lead">Bajty wiersza leżą już w pamięci. Teraz procesor ma sprawdzić warunek „gracz równa się 7" i w zależności od wyniku coś zrobić albo nie. Tylko że procesor nie umie „sprawdzać warunków". Umie dodawać, odejmować i przestawiać palec. Okazuje się, że to wystarcza.</p>
+
+  <div class="frames">
+    <div><b>Skąd przychodzimy</b><p>Z pamięci, do której baza przyniosła stronę z wierszami.</p></div>
+    <div><b>Co tu zobaczysz</b><p>Warunek z zapytania wykonany na zabawkowym procesorze: osiem poleceń, jedno odejmowanie, jeden skok.</p></div>
+    <div><b>Dokąd schodzimy</b><p>Do wspólnego pnia: stąd w dół jest już ta sama droga co dla ziarnka piasku.</p></div>
+  </div>
+
+  <div class="box analogy">
+    <span class="tag">Analogia</span>
+    <p>Jak sprawdzić, czy dwa stosy monet są równe, mając do dyspozycji tylko wagę szalkową? Kładziesz jeden na lewej szalce, drugi na prawej. Jeśli waga stoi równo, są takie same. Procesor robi coś bardzo podobnego: <b>odejmuje</b> jedną liczbę od drugiej. Jeśli wyszło zero, liczby były równe. Nie potrzebuje do tego żadnego nowego układu: odejmowanie robi ten sam sumator co dodawanie.</p>
+  </div>
+
+  <div class="widget">
+    <p class="wt">Warunek „gracz równa się 7" na zabawkowym procesorze</p>
+    <div id="cpu"></div>
+  </div>
+
+  <section>
+    <h2>Co tu się dzieje, polecenie po poleceniu</h2>
+    <p>To jest fragment zapytania <i>policz zdarzenia gracza 7</i> dla jednego wiersza. W pamięci leży numer gracza z bieżącego wiersza (skrytka 13), szukany numer (skrytka 15) i licznik pasujących wierszy (skrytka 12).</p>
+    <ol>
+      <li><b>WEŹ 13, ODEJMIJ 15.</b> Procesor bierze numer gracza z wiersza i odejmuje od niego szukany numer. Wynik sam w sobie nikogo nie obchodzi. Ważne jest tylko, czy wyszło zero. Procesor zapamiętuje to w osobnym, jednobitowym <b>znaczniku zera</b>.</li>
+      <li><b>SKOCZ GDY ZERO 4.</b> To jest „decyzja". Jeśli znacznik świeci, palec przeskakuje na skrytkę 4. Jeśli nie, palec idzie dalej po kolei, do skrytki 3.</li>
+      <li><b>Dwie drogi.</b> W skrytce 3 czeka „SKOCZ 7", czyli ominięcie reszty: wiersz nie pasuje. W skrytkach od 4 do 6 jest doliczenie jedynki do licznika: wiersz pasuje.</li>
+      <li><b>STOP.</b> Obie drogi spotykają się w skrytce 7.</li>
+    </ol>
+    <p>Przejdź program raz, tak jak jest (gracz 7, szukany 7). Potem naciśnij „Od nowa", zaznacz skrytkę 13 i zmień ją na inną liczbę, na przykład 3. Zobacz, jak palec idzie inną drogą, choć program jest ten sam.</p>
+
+    <div class="box key">
+      <span class="tag">Zapamiętaj</span>
+      <p>Każde „jeśli" w każdym programie, każde WHERE w SQL, każde <code>if</code> w Pythonie kończy na dole tak samo: <b>odejmij, zobacz, czy wyszło zero (albo czy wyszło poniżej zera), i w zależności od tego przestaw palec albo nie</b>. Komputer nie podejmuje decyzji. Wybiera jedną z dwóch z góry przygotowanych dróg na podstawie jednego bitu.</p>
+    </div>
+
+    <h2>Skąd się bierze znacznik zera</h2>
+    <p>Wynik odejmowania to osiem bitów. Jest zerem wtedy, gdy <b>żaden</b> z nich nie świeci. Sprawdza to mały układ z bramek, które już znasz: siedem bramek LUB zbiera osiem bitów w jeden sygnał „czy świeci cokolwiek", a jedna bramka NIE go odwraca. Klikaj bity wyniku poniżej.</p>
+
+    <div class="widget">
+      <p class="wt">Wykrywacz zera: osiem bitów wyniku i jeden bit odpowiedzi</p>
+      <div class="controls" style="margin:0">
+        <span class="hint" style="margin:0">Wynik odejmowania:</span>
+        <span class="bits" id="zbits"></span>
+        <span class="hint" style="margin:0 0 0 14px">Znacznik zera:</span>
+        <span class="lamp" id="zlamp"></span>
+      </div>
+      <div class="controls">
+        <button class="btn" data-pair="7,7">Gracz 7, szukany 7</button>
+        <button class="btn" data-pair="3,7">Gracz 3, szukany 7</button>
+        <button class="btn" data-pair="9,7">Gracz 9, szukany 7</button>
+      </div>
+      <div class="say" id="zsay"></div>
+    </div>
+
+    <details class="box quiz">
+      <summary>A warunek „x większe niż 50"? Tu nie wystarczy sprawdzić, czy wyszło zero.</summary>
+      <p>Znów odejmowanie: od 50 odejmij x. Jeśli x jest większe, wynik wychodzi poniżej zera. Sumator sygnalizuje to osobnym bitem, bardzo podobnym do przeniesienia przy dodawaniu, i procesor zapamiętuje go w drugim znaczniku. Są więc dwa znaczniki: „wyszło zero" i „wyszło poniżej zera". Z ich kombinacji da się złożyć wszystkie porównania: równe, różne, większe, mniejsze, większe lub równe.</p>
+    </details>
+
+    <details class="box quiz">
+      <summary>Ten program sprawdza jeden wiersz. Skąd procesor wie, gdzie leży następny?</summary>
+      <p>Prawdziwy procesor trzyma w jednej z podręcznych tabliczek adres bieżącego wiersza. Po sprawdzeniu dodaje do niego długość wiersza (u nas 17 bajtów) i dostaje adres następnego, dokładnie tak jak w rozdziale „Ziarnko jako dane" liczyło się numer skrytki ziarnka. Potem skacze na początek pętli. Zabawkowy procesor nie ma polecenia „weź ze skrytki, której numer leży na tabliczce", dlatego pokazuję jeden obrót pętli zamiast całej.</p>
+    </details>
+
+    <h2>Tu ścieżka łączy się z pniem</h2>
+    <p>Zeszliśmy od zapytania SQL do ośmiu poleceń procesora. Niżej nie ma już niczego, co byłoby właściwe dla baz danych. Odejmowanie wykonuje sumator z rozdziału <a href="t4.html">„Liczenie z bramek"</a>. Znacznik zera to jeden zatrzask z rozdziału <a href="t6.html">„Jak pamięć pamięta"</a>. Skok to zwrotnica, która wpuszcza numer skrytki do palca. A pod tym wszystkim są te same tranzystory i te same elektrony.</p>
+
+    <div class="box scale">
+      <span class="tag">Skala</span>
+      <p>Prawdziwy procesor nie sprawdza wierszy pojedynczo. Ma polecenia, które porównują naraz szesnaście albo więcej liczb leżących obok siebie w pamięci, i dlatego jeden rdzeń potrafi przejrzeć miliard wartości na sekundę. To kolejny powód, dla którego hurtownie danych trzymają kolumny osobno: liczby z jednej kolumny leżą wtedy ciasno jedna za drugą, gotowe do takiego hurtowego porównania.</p>
+    </div>
+
+    <details class="box simpl">
+      <summary>Co tu uprościłem</summary>
+      <p>Nowoczesny procesor nie czeka z pobraniem następnego polecenia na wynik porównania. <b>Zgaduje</b>, którą drogą pójdzie program (na podstawie tego, jak szło poprzednio), i zaczyna ją wykonywać na zapas. Jeśli zgadł źle, wyrzuca tę pracę i wraca. Przy warunkach, które raz są spełnione, raz nie, bez żadnej prawidłowości, zgaduje słabo i traci czas. Dlatego bazy danych starają się zapisywać pętle tak, żeby skoków warunkowych było w nich jak najmniej.</p>
+    </details>
+  </section>
+</main>
+<script type="module" src="../js/chapters/b3.js"></script>
+</body>
+</html>

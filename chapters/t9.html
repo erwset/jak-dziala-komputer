@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Przelot: od ekranu do atomu · Jak działa komputer</title>
+<script src="../js/theme.js"></script>
+<link rel="stylesheet" href="../css/style.css">
+<script type="importmap">{"imports":{"three":"../vendor/three/build/three.module.js","three/addons/":"../vendor/three/examples/jsm/"}}</script>
+<style>
+  #fly { height: 500px; }
+  #fade { position: absolute; inset: 0; background: var(--bg); opacity: 0; pointer-events: none; transition: opacity .28s; }
+  .hud { position: absolute; left: 14px; top: 12px; right: 14px; display: flex; justify-content: space-between; gap: 10px; pointer-events: none; font-size: .82rem; }
+  .hud span { background: color-mix(in srgb, var(--panel) 82%, transparent); border: 1px solid var(--line); border-radius: 99px; padding: 4px 12px; }
+  .hud b { color: var(--accent); }
+  .stops { display: flex; gap: 4px; flex-wrap: wrap; margin: 10px 0 0; }
+  .stops button { flex: 1 1 auto; font: inherit; font-size: .76rem; padding: 5px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel2); color: var(--muted); cursor: pointer; border-top: 4px solid var(--c); }
+  .stops button.on { color: var(--ink); font-weight: 650; background: var(--accent-soft); }
+  #depth { width: 100%; }
+</style>
+</head>
+<body data-chapter="t9">
+<main>
+  <p class="lead">Wszystkie warstwy w jednej scenie. Przesuwaj suwak albo klikaj „Głębiej" i przeleć całą drogę: od biurka, przez piksele i wnętrze komputera, aż do atomów krzemu. Każdy przystanek to jeden z rozdziałów, które masz za sobą.</p>
+
+  <div class="widget">
+    <p class="wt">Przelot w głąb komputera</p>
+    <div class="stage3d" id="fly"><div class="hud"><span>Przystanek <b id="hudN">1</b> z 8: <b id="hudName"></b></span><span>Szerokość kadru: <b id="hudScale"></b></span></div><div id="fade"></div></div>
+    <input type="range" id="depth" min="0" max="7" step="0.005" value="0">
+    <div class="stops" id="stops"></div>
+    <div class="say" id="say" style="min-height:6.5em"></div>
+    <div class="controls">
+      <button class="btn" id="up">← Wyżej</button>
+      <button class="btn primary" id="down">Głębiej →</button>
+      <button class="btn" id="tour">Przeleć całość</button>
+    </div>
+  </div>
+
+  <section>
+    <h2>Co warto wynieść z całej podróży</h2>
+    <ul>
+      <li><b>Każda warstwa jest prosta.</b> Tranzystor to kran. Bramka to kilka kranów. Sumator to kilkadziesiąt bramek. Procesor to sumator, pamięć i trzy czynności w kółko. Nigdzie po drodze nie było niczego naprawdę trudnego. Trudna jest tylko <b>liczba</b> elementów i warstw.</li>
+      <li><b>Każda warstwa ukrywa tę pod spodem.</b> Programista piszący w Pythonie nie myśli o bramkach. Projektant bramek nie myśli o elektronach. Dzięki temu da się w ogóle budować tak złożone rzeczy: każdy pracuje na swoim poziomie i ufa, że niższy działa.</li>
+      <li><b>Znaczenie mieszka na górze.</b> Na dole są tylko elektrony, które są albo ich nie ma. To, że pewien ich układ „jest" ziarnkiem piasku, zdjęciem albo zdaniem, wynika z umowy zapisanej w programie i z tego, jak czyta to człowiek.</li>
+      <li><b>Wszystko robi to samo.</b> Gra, baza danych i model językowy różnią się programem, czyli liczbami w pamięci. Sprzęt pod spodem jest ten sam i robi te same trzy rzeczy: bierze liczby, przepuszcza przez bramki, zapisuje wynik.</li>
+    </ul>
+
+    <details class="box quiz">
+      <summary>Wróć do pytania z początku: skąd komputer wie, że ten konkretny fragment piasku to tamta bramka logiczna?</summary>
+      <p>Nie wie, bo takiego przypisania nie ma. Ziarnko nie ma swojej bramki. Ziarnko to sześć liczb w pamięci, czyli niecałe dwieście bitów: dwieście maleńkich wiaderek z ładunkiem, które przez chwilę trzymają odpowiedni wzór zer i jedynek. Kilkadziesiąt razy na sekundę te liczby przepływają przez <b>te same</b> bramki procesora co liczby wszystkich innych ziaren i wracają zmienione. Związek między „tym ziarnkiem" a „tymi tranzystorami" to wyłącznie adres w pamięci, którego pilnuje program.</p>
+    </details>
+
+    <div class="box scale">
+      <span class="tag">Skala całej drogi</span>
+      <p>Od biurka (metr) do odstępu między atomami krzemu (ćwierć nanometra) jest około cztery miliardy razy. To mniej więcej tak, jakby zacząć od widoku całej Ziemi i skończyć na pojedynczym ziarnku ryżu.</p>
+    </div>
+
+    <div class="box">
+      <span class="tag" style="color:var(--muted)">Co dalej</span>
+      <p>To koniec głównej drogi: od symulacji 3D do atomów i z powrotem. Są jeszcze dwie krótsze ścieżki, które schodzą do tego samego pnia innymi drogami: <a href="b0.html">zapytanie do bazy danych</a> i <a href="c0.html">generowanie tekstu przez model językowy</a>. A na deser rozdział o tym, czym od tego wszystkiego różnią się <a href="q.html">komputery kwantowe</a>.</p>
+    </div>
+  </section>
+</main>
+<script type="module" src="../js/chapters/t9.js"></script>
+</body>
+</html>

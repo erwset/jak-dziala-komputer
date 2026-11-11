@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Szukanie: po kolei albo przez spis treści · Jak działa komputer</title>
+<script src="../js/theme.js"></script>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  #tree .edge { stroke: var(--off); stroke-width: 2; fill: none; }
+  #tree .edge.on { stroke: var(--on); stroke-width: 4; }
+  #tree .node rect { fill: var(--panel2); stroke: var(--muted); stroke-width: 1.5; }
+  #tree .node.on rect { stroke: var(--on); stroke-width: 3; fill: var(--accent-soft); }
+  #tree text { fill: var(--ink); font: 600 11px var(--mono); text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+  #tree text.s { fill: var(--muted); font: 500 11px var(--font); }
+  #tree .row { fill: var(--panel2); stroke: var(--line); cursor: pointer; }
+  #tree .row.seen { fill: var(--off); }
+  #tree .row.goal { stroke: var(--electron); stroke-width: 2.5; }
+  #tree .row.hit { fill: var(--good); }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+  .two > div { background: var(--panel2); border-radius: 10px; padding: 10px 14px; }
+  .two b { display: block; font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .two .v { font: 600 1.25rem var(--mono); }
+  @media (max-width: 700px) { .two { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body data-chapter="b1">
+<main>
+  <p class="lead">Poprzednio baza sprawdzała każdy wiersz po kolei. Przy 12 wierszach to nic. Przy miliardzie to miliard sprawdzeń na jedno pytanie. Zobacz, jak jedna dodatkowa, posortowana struktura zamienia miliard kroków w cztery.</p>
+
+  <div class="frames">
+    <div><b>Skąd przychodzimy</b><p>Z planu „dla każdego wiersza sprawdź warunek".</p></div>
+    <div><b>Co tu zobaczysz</b><p>Wyścig dwóch sposobów szukania jednego wiersza: po kolei i przez indeks.</p></div>
+    <div><b>Dokąd schodzimy</b><p>Do miejsca, w którym te wiersze fizycznie leżą.</p></div>
+  </div>
+
+  <div class="box analogy">
+    <span class="tag">Analogia</span>
+    <p>Szukasz w grubej encyklopedii hasła „tranzystor". Nie czytasz jej od pierwszej strony. Otwierasz mniej więcej tam, gdzie powinno być T, patrzysz, czy trafiłeś za wcześnie czy za późno, i poprawiasz. Po kilku ruchach jesteś na miejscu. Działa to z jednego powodu: hasła są <b>ułożone alfabetycznie</b>. <span class="t" data-t="indeks">Indeks</span> w bazie danych to dokładnie taki posortowany spis, prowadzony obok tabeli.</p>
+  </div>
+
+  <div class="widget">
+    <p class="wt">Szukamy jednego wiersza wśród 64. Kliknij dowolną kratkę na dole, żeby wybrać, którego</p>
+    <div class="hs"><svg id="tree" viewBox="0 0 780 330" style="width:100%;height:auto;display:block;--minw:680px"></svg></div>
+    <div class="controls">
+      <button class="btn primary" id="go">Szukaj oboma sposobami</button>
+      <label class="sl">Szukany numer <input type="range" id="goal" min="1" max="64" value="53"> <span class="num" id="goalTxt"></span></label>
+    </div>
+    <div class="two">
+      <div><b>Po kolei</b><div class="v" id="cScan">0</div><span class="hint">sprawdzonych wierszy</span></div>
+      <div><b>Przez indeks</b><div class="v" id="cTree">0</div><span class="hint">odwiedzonych węzłów spisu</span></div>
+    </div>
+    <div class="say" id="say"></div>
+  </div>
+
+  <section>
+    <h2>Jak czytać ten rysunek</h2>
+    <p>Na samym dole są 64 wiersze tabeli, ponumerowane. Nad nimi wisi indeks: drzewo z trzech pięter. Każdy prostokąt to <b>węzeł</b>, czyli karteczka z kilkoma liczbami-drogowskazami.</p>
+    <ul>
+      <li><b>Góra (korzeń)</b> ma trzy drogowskazy: 17, 33 i 49. Dzielą wszystkie numery na cztery przedziały. Jedno spojrzenie mówi, w której ćwiartce tabeli jest szukany wiersz.</li>
+      <li><b>Środkowe piętro</b> robi to samo wewnątrz wybranej ćwiartki: dzieli ją na cztery mniejsze kawałki.</li>
+      <li><b>Dolne piętro</b> wskazuje już konkretne cztery wiersze.</li>
+    </ul>
+    <p>Trzy spojrzenia zamiast kilkudziesięciu sprawdzeń. A teraz najważniejsze: każde dodatkowe piętro mnoży liczbę obsługiwanych wierszy przez cztery. Cztery piętra to 256 wierszy, pięć to 1024, dziesięć to ponad milion.</p>
+
+    <div class="widget">
+      <p class="wt">A gdyby tabela była większa?</p>
+      <label class="sl">Liczba wierszy w tabeli <input type="range" id="size" min="2" max="9" step="0.5" value="6" style="width:280px"> <span class="num" id="sizeTxt"></span></label>
+      <div class="two">
+        <div><b>Po kolei</b><div class="v" id="sScan"></div><span class="hint">wierszy do sprawdzenia, średnio</span></div>
+        <div><b>Przez indeks</b><div class="v" id="sTree"></div><span class="hint">węzłów do odwiedzenia</span></div>
+      </div>
+      <div class="say" id="sizeSay"></div>
+    </div>
+
+    <details class="box quiz">
+      <summary>Skoro indeks tak przyspiesza szukanie, dlaczego nie założyć go na każdej kolumnie każdej tabeli?</summary>
+      <p>Bo indeks trzeba utrzymywać. Każdy nowy wiersz w tabeli oznacza dopisanie go we właściwe miejsce każdego indeksu, tak żeby pozostał posortowany. Im więcej indeksów, tym wolniejsze zapisywanie. Do tego każdy indeks zajmuje miejsce, często porównywalne z samą tabelą. Indeks to wymiana: szybsze czytanie za wolniejsze zapisywanie i więcej zajętego dysku. Zakłada się je tam, gdzie często się szuka.</p>
+    </details>
+
+    <details class="box quiz">
+      <summary>W BigQuery nie zakładasz indeksów, a zapytania i tak są szybkie. Jak to możliwe?</summary>
+      <p>BigQuery gra inaczej. Po pierwsze trzyma każdą kolumnę osobno, więc zapytanie o dwie kolumny w ogóle nie dotyka pozostałych dwudziestu. Po drugie tabele dzieli się na części (na przykład po dniach) i jeśli warunek mówi „tylko wczoraj", reszta zostaje pominięta bez czytania. To też rodzaj spisu treści, tylko grubszego. Po trzecie to, co zostało, przegląda naraz bardzo wiele maszyn. Zamiast sprytnie omijać wiersze, BigQuery czyta ich mniej i robi to bardzo szeroko. Dlatego płacisz tam za ilość przeczytanych danych, a zawężenie zapytania do potrzebnych kolumn i dat realnie obniża koszt.</p>
+    </details>
+
+    <div class="box key">
+      <span class="tag">Zapamiętaj</span>
+      <p>Szybkość bazy danych rzadko zależy od tego, jak szybko procesor porównuje liczby. Zależy od tego, <b>ilu porównań da się uniknąć</b>. Posortowane dane pozwalają jednym porównaniem odrzucić połowę albo trzy czwarte tabeli naraz.</p>
+    </div>
+
+    <div class="box scale">
+      <span class="tag">Skala</span>
+      <p>W prawdziwym indeksie jeden węzeł ma nie trzy drogowskazy, tylko kilkaset, bo tyle mieści się na jednej <span class="t" data-t="strona">stronie danych</span>. Dzięki temu drzewo jest bardzo płaskie: trzy piętra obsługują kilkadziesiąt milionów wierszy, cztery piętra kilka miliardów. Znalezienie jednego wiersza wśród miliarda to wtedy cztery odczyty zamiast pół miliarda.</p>
+    </div>
+
+    <details class="box simpl">
+      <summary>Co tu uprościłem</summary>
+      <p>Pokazałem szukanie jednego wiersza po numerze. Indeksy przydają się też do przedziałów („wszystko między 100 a 200"), bo dolne piętro jest posortowane i wystarczy iść po nim w bok. Z kolei warunek, który pasuje do dużej części tabeli, szybciej obsłużyć zwykłym przejściem po kolei niż skakaniem po indeksie, i baza potrafi to ocenić. Są też inne rodzaje indeksów, na przykład oparte na mieszaniu wartości, dobre tylko do szukania dokładnego trafienia.</p>
+    </details>
+  </section>
+</main>
+<script type="module" src="../js/chapters/b1.js"></script>
+</body>
+</html>

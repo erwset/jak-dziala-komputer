@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jak pamięć pamięta · Jak działa komputer</title>
+<script src="../js/theme.js"></script>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  .reg8 { display: grid; grid-template-columns: auto repeat(8, 34px); gap: 6px 4px; align-items: center; justify-content: start; }
+  .reg8 .lab { font-size: .84rem; color: var(--muted); padding-right: 10px; }
+  .reg8 .bit { width: 34px; }
+  .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .cellbox { background: var(--panel2); border-radius: 12px; padding: 12px 14px; text-align: center; }
+  .cellbox h3 { margin: 0 0 2px; font-size: 1rem; } .cellbox small { color: var(--muted); display: block; min-height: 2.6em; font-size: .8rem; }
+  .cellbox .pic { height: 120px; display: flex; align-items: flex-end; justify-content: center; margin: 8px 0; position: relative; }
+  .cellbox .read { font-weight: 650; }
+  .bucket { width: 70px; height: 110px; border: 3px solid var(--muted); border-top: 0; border-radius: 0 0 10px 10px; position: relative; overflow: hidden; }
+  .bucket i { position: absolute; left: 0; right: 0; bottom: 0; background: var(--electron); transition: height .1s linear; }
+  .bucket::after { content: ""; position: absolute; left: -3px; right: -3px; top: 50%; border-top: 2px dashed var(--hole); }
+  .loop { width: 90px; height: 90px; border-radius: 50%; border: 6px solid var(--off); display: flex; align-items: center; justify-content: center; font: 700 1.8rem var(--mono); margin-bottom: 10px; }
+  .loop.on { border-color: var(--on); box-shadow: 0 0 16px var(--on-glow); }
+  .loop.dead { border-style: dashed; color: var(--muted); }
+  .trap { width: 110px; height: 100px; border: 3px solid var(--muted); border-radius: 8px; position: relative; background: repeating-linear-gradient(45deg, transparent 0 6px, color-mix(in srgb, var(--muted) 18%, transparent) 6px 8px); }
+  .trap .fg { position: absolute; inset: 22px 14px; background: var(--panel); border: 2px solid var(--muted); border-radius: 6px; display: flex; flex-wrap: wrap; gap: 4px; padding: 6px; align-content: center; justify-content: center; }
+  .trap .fg i { width: 9px; height: 9px; border-radius: 50%; background: var(--electron); }
+  @media (max-width: 760px) { .three { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body data-chapter="t6">
+<main>
+  <p class="lead">Bramka reaguje na to, co ma na wejściach w tej chwili. Zabierz sygnał, a wyjście natychmiast się zmieni. Jak więc z takich klocków zbudować coś, co <b>pamięta</b>? Odpowiedź jest zaskakująco prosta: trzeba zawrócić wyjście z powrotem na wejście.</p>
+
+  <div class="frames">
+    <div><b>Skąd przychodzimy</b><p>Z bramek, które niczego nie pamiętają.</p></div>
+    <div><b>Co tu zobaczysz</b><p>Pętlę z dwóch bramek, która trzyma jeden bit, i trzy sposoby pamiętania stosowane w prawdziwym sprzęcie.</p></div>
+    <div><b>Dokąd schodzimy</b><p>Do tranzystorów, z których zrobione są bramki.</p></div>
+  </div>
+
+  <div class="box analogy">
+    <span class="tag">Analogia</span>
+    <p>Dwie osoby opierają się o siebie plecami. Każda stoi tylko dlatego, że podpiera ją druga. Jeśli nikt ich nie popchnie, mogą tak stać bez końca, przechylone w jedną stronę. Popchnij mocno, a przechylą się w drugą i znów tak zostaną. Taki układ ma <b>dwa stabilne położenia</b> i sam z siebie żadnego nie zmienia. Jedno położenie nazwiemy zerem, drugie jedynką.</p>
+  </div>
+
+  <section>
+    <h2>Pętla z dwóch bramek</h2>
+    <p>Poniżej są dwie bramki NIE-LUB (dają jedynkę tylko wtedy, gdy <b>oba</b> wejścia są zerami). Wyjście każdej wraca na wejście drugiej. To właśnie te skrzyżowane przewody w środku. Kliknij „ustaw", a potem kliknij je jeszcze raz, żeby zgasło, i obserwuj zapamiętany bit.</p>
+
+    <div class="widget">
+      <p class="wt">Zatrzask: dwie bramki, które podtrzymują się nawzajem</p>
+      <div id="sr"></div>
+      <div class="say" id="srSay"></div>
+    </div>
+
+    <p>Zrobiłeś właśnie coś, czego żadna pojedyncza bramka nie potrafi: sygnał „ustaw" dawno zniknął, a układ <b>nadal pamięta</b>, że kiedyś się pojawił. Informacja krąży w kółko po pętli i sama się odnawia. Taki układ nazywa się <span class="t" data-t="zatrzask">zatrzaskiem</span>.</p>
+
+    <details class="box quiz">
+      <summary>Co trzyma ten bit przy życiu? Co się stanie, gdy odłączysz prąd?</summary>
+      <p>Bit istnieje tylko jako napięcie krążące po pętli, a bramki muszą być zasilane, żeby je podtrzymywać. Bez prądu pętla gaśnie i bit przepada. Po ponownym włączeniu układ ustawi się w przypadkowym położeniu. Dlatego po wyłączeniu komputera wszystko, co było tylko w pamięci roboczej, znika.</p>
+    </details>
+
+    <h2>Furtka: pamiętaj tylko wtedy, gdy każę</h2>
+    <p>Zatrzask z przyciskami „ustaw" i „skasuj" jest niewygodny. W praktyce chcemy mieć jeden przewód z <b>danymi</b> i drugi mówiący „<b>zapisz teraz</b>". Wystarczy dołożyć przed pętlą trzy bramki, które działają jak furtka: gdy „zapisz" jest zgaszone, do pętli nic nie dociera i może sobie spokojnie pamiętać.</p>
+
+    <div class="widget">
+      <p class="wt">Skrytka na jeden bit: dane i furtka</p>
+      <div id="dl"></div>
+      <div class="say" id="dlSay"></div>
+    </div>
+
+    <p>Osiem takich skrytek obok siebie, ze wspólnym przewodem „zapisz", daje <span class="t" data-t="rejestr">rejestr</span>: miejsce na jedną ośmiobitową liczbę. Podręczna tabliczka i palec z rozdziału o procesorze to właśnie takie rejestry. A przewód „zapisz" jest podłączony do <span class="t" data-t="zegar">zegara</span>: przy każdym tyknięciu wszystkie rejestry naraz zapamiętują to, co akurat stoi na ich wejściach. Dzięki temu cały procesor robi kroki równo, jak orkiestra.</p>
+
+    <div class="widget">
+      <p class="wt">Rejestr ośmiobitowy</p>
+      <div class="reg8" id="reg"></div>
+      <div class="controls"><button class="btn primary" id="clk">Tyknięcie zegara: zapisz</button></div>
+      <div class="say" id="regSay"></div>
+    </div>
+
+    <h2>Trzy sposoby pamiętania w prawdziwym sprzęcie</h2>
+    <p>Pętla z bramek jest szybka, ale zajmuje dużo miejsca. Dlatego w komputerze są trzy różne rodzaje pamięci, każdy oparty na innym pomyśle fizycznym. Zapisz bit we wszystkich trzech, a potem wyłącz prąd.</p>
+
+    <div class="widget">
+      <p class="wt">Jeden bit, trzy sposoby</p>
+      <div class="three">
+        <div class="cellbox"><h3>Pętla</h3><small>pamięć podręczna procesora</small><div class="pic"><div class="loop" id="sLoop">0</div></div><div class="read" id="sRead"></div></div>
+        <div class="cellbox"><h3>Wiaderko z ładunkiem</h3><small>pamięć RAM</small><div class="pic"><div class="bucket"><i id="dLevel"></i></div></div><div class="read" id="dRead"></div></div>
+        <div class="cellbox"><h3>Pułapka na elektrony</h3><small>dysk SSD, pendrive, karta pamięci</small><div class="pic"><div class="trap"><div class="fg" id="fTrap"></div></div></div><div class="read" id="fRead"></div></div>
+      </div>
+      <div class="controls">
+        <button class="btn" id="w1">Zapisz 1</button>
+        <button class="btn" id="w0">Zapisz 0</button>
+        <button class="btn primary" id="power">Wyłącz prąd</button>
+        <label class="sl"><input type="checkbox" id="refresh" checked> odświeżaj wiaderko automatycznie</label>
+      </div>
+      <div class="say" id="memSay"></div>
+    </div>
+
+    <ul>
+      <li><b>Pętla</b> to zatrzask, który widziałeś wyżej, zrobiony z sześciu tranzystorów. Bardzo szybka, ale duża i droga. Używana tam, gdzie liczy się każda chwila: wewnątrz procesora.</li>
+      <li><b>Wiaderko</b> to maleńki zbiornik na ładunek elektryczny i jeden tranzystor jako kranik. Pełne wiaderko znaczy 1, puste 0. Jest tak małe i proste, że mieści się ich miliardy, ale <b>przecieka</b>: po ułamku sekundy ładunek by uciekł. Dlatego komputer kilkanaście razy na sekundę odczytuje każde wiaderko i dolewa do pełna te, które były pełne. Odznacz „odświeżaj" i zobacz, co się stanie z zapisaną jedynką.</li>
+      <li><b>Pułapka</b> to kawałek przewodnika ze wszystkich stron otoczony izolatorem. Elektrony wciska się do środka wysokim napięciem i nie mają jak uciec, nawet latami, nawet bez prądu. Czy w pułapce są elektrony, czy nie, poznaje się po tym, jak zachowuje się tranzystor tuż pod nią.</li>
+    </ul>
+
+    <details class="box quiz">
+      <summary>Skoro pułapka pamięta bez prądu, to dlaczego cała pamięć komputera nie jest tak zbudowana?</summary>
+      <p>Bo wciskanie elektronów przez izolator jest powolne i za każdym razem odrobinę go niszczy. Taka komórka wytrzymuje od kilku tysięcy do kilkudziesięciu tysięcy zapisów, a procesor zmienia zawartość pamięci roboczej miliardy razy na sekundę. Pułapka jest więc świetna na dysk (rzadko zapisywany, długo przechowywany), a fatalna na pamięć roboczą.</p>
+    </details>
+
+    <div class="box key">
+      <span class="tag">Zapamiętaj</span>
+      <p>Pamiętanie to nie osobna magia. To albo sygnał krążący w pętli z bramek, albo garstka elektronów uwięziona w maleńkim zbiorniku. W obu przypadkach bit jest <b>fizycznym stanem konkretnego miejsca w krzemie</b>, a adres z rozdziału o pamięci to po prostu droga do tego miejsca.</p>
+    </div>
+
+    <div class="box scale">
+      <span class="tag">Skala</span>
+      <p>Jedno „wiaderko" w pamięci RAM mieści kilkadziesiąt tysięcy elektronów i jest odświeżane mniej więcej szesnaście razy na sekundę. W kości pamięci 16 GB jest ich około 137 miliardów. Komórka dysku SSD trzyma zaledwie od kilkudziesięciu do kilkuset elektronów, a dzięki rozróżnianiu kilku poziomów napełnienia zapisuje w jednej pułapce nawet trzy lub cztery bity.</p>
+    </div>
+
+    <details class="box simpl">
+      <summary>Co tu uprościłem</summary>
+      <p>Rejestry w procesorze reagują nie na cały czas trwania sygnału „zapisz", tylko na sam moment jego zapalenia, co wymaga dwóch zatrzasków ustawionych jeden za drugim. Odczyt wiaderka w pamięci RAM je opróżnia, więc po każdym odczycie trzeba je od razu napełnić ponownie. Pominąłem też dyski talerzowe, które pamiętają za pomocą namagnesowania maleńkich obszarów wirującej płyty.</p>
+    </details>
+  </section>
+</main>
+<script type="module" src="../js/chapters/t6.js"></script>
+</body>
+</html>

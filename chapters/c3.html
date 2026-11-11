@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Miliardy mnożeń i jedno mnożenie · Jak działa komputer</title>
+<script src="../js/theme.js"></script>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  .lanes { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .lanes h3 { margin: 0 0 4px; font-size: .95rem; } .lanes small { color: var(--muted); }
+  .cells { display: grid; grid-template-columns: repeat(24, 1fr); gap: 2px; margin-top: 8px; }
+  .cells i { aspect-ratio: 1; border-radius: 2px; background: var(--panel2); display: block; }
+  .cells i.d { background: var(--on); }
+  .mul { display: grid; grid-template-columns: auto repeat(8, 32px) auto; gap: 5px 4px; align-items: center; justify-content: start; }
+  .mul .lab { font-size: .82rem; color: var(--muted); padding-right: 8px; white-space: nowrap; }
+  .mul .val { font: 600 1rem var(--mono); padding-left: 10px; }
+  .mul .bit { width: 32px; }
+  .mul .e { width: 32px; }
+  .mul hr { grid-column: 1 / -1; border: 0; border-top: 2px solid var(--muted); width: 100%; margin: 2px 0; }
+  .mul .bit.ghost { opacity: .25; }
+  .mul .bit.cur { outline: 2px solid var(--electron); outline-offset: 1px; }
+  @media (max-width: 700px) { .lanes { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body data-chapter="c3">
+<main>
+  <p class="lead">Jedno słowo odpowiedzi to setki miliardów mnożeń. Żeby tekst pojawiał się w rozsądnym tempie, trzeba je wykonać w ułamku sekundy. W tym rozdziale są dwa pytania: jaki sprzęt daje temu radę i jak właściwie pomnożyć dwie liczby, mając do dyspozycji tylko sumator.</p>
+
+  <div class="frames">
+    <div><b>Skąd przychodzimy</b><p>Z warstw modelu: tabele liczb mnożone przez tabele liczb.</p></div>
+    <div><b>Co tu zobaczysz</b><p>Dlaczego do tego zadania służy karta graficzna i jak mnożenie rozkłada się na dodawania.</p></div>
+    <div><b>Dokąd schodzimy</b><p>Do wspólnego pnia: sumator, bramki, tranzystory.</p></div>
+  </div>
+
+  <section>
+    <h2>Jeden mistrz czy stadion pomocników</h2>
+    <p>Przypomnij sobie warstwę z poprzedniego rozdziału. Każdy neuron liczył swoją sumę sam, nie oglądając się na pozostałe. Nic nie stoi na przeszkodzie, żeby wszystkie neurony liczyły <b>jednocześnie</b>, każdy na osobnym kawałku sprzętu. Procesor ma kilkanaście bardzo szybkich i bardzo wszechstronnych rdzeni. <span class="t" data-t="gpu">Karta graficzna</span> ma tysiące prostych jednostek, z których każda umie niewiele poza mnożeniem i dodawaniem. Do tego zadania to idealny układ sił.</p>
+
+    <div class="widget">
+      <p class="wt">384 mnożenia do wykonania. Każda kratka to jedno</p>
+      <div class="lanes">
+        <div><h3>Procesor: jeden szybki pracownik</h3><small>robi 4 mnożenia na takt, jedno po drugim</small><div class="cells" id="lCpu"></div><p class="hint" id="tCpu"></p></div>
+        <div><h3>Karta graficzna: 64 wolniejszych pracowników</h3><small>każdy robi 1 mnożenie na takt, ale wszyscy naraz</small><div class="cells" id="lGpu"></div><p class="hint" id="tGpu"></p></div>
+      </div>
+      <div class="controls"><button class="btn primary" id="race">Start</button></div>
+      <div class="say" id="raceSay">Naciśnij Start.</div>
+    </div>
+
+    <p>Zwróć uwagę: pojedynczy pracownik karty graficznej jest tu cztery razy <b>wolniejszy</b> od procesora. Wygrywa wyłącznie liczebnością. To działa tylko wtedy, gdy zadanie da się pociąć na niezależne kawałki. Mnożenie tabel liczb takie właśnie jest, podobnie jak rysowanie milionów pikseli, do którego karty graficzne pierwotnie zbudowano. Sprzęt wymyślony do gier okazał się przypadkiem idealny do sztucznej inteligencji.</p>
+
+    <details class="box quiz">
+      <summary>Dlaczego odpowiedź modelu pojawia się słowo po słowie, a nie cała naraz, skoro karta graficzna liczy tak wiele rzeczy jednocześnie?</summary>
+      <p>Bo jednoczesność działa wewnątrz jednego kroku, a nie między krokami. Żeby policzyć szanse na dziesiąte słowo, trzeba znać dziewiąte, a ono powstaje dopiero po przeliczeniu i losowaniu. Kroki muszą więc iść jeden po drugim. W środku każdego kroku miliardy mnożeń dzieją się naraz, ale samych kroków nie da się zrównoleglić. To dlatego długa odpowiedź trwa dłużej niż krótka i dlatego widzisz, jak tekst „się pisze".</p>
+    </details>
+
+    <h2>A jak pomnożyć dwie liczby?</h2>
+    <p>W rozdziale „Liczenie z bramek" procesor umiał tylko dodawać. Mnożenie wygląda na coś zupełnie innego, ale da się je złożyć z dodawań, i to w sposób, który znasz ze szkoły: mnożenie pisemne. Mnożysz pierwszą liczbę przez każdą cyfrę drugiej, każdy wynik zapisujesz przesunięty o jedno miejsce w lewo, a na końcu wszystko sumujesz.</p>
+    <p>Na bitach jest to jeszcze prostsze niż na zwykłych cyfrach, bo cyfra drugiej liczby może być tylko zerem albo jedynką:</p>
+    <ul>
+      <li>jeśli to <b>jedynka</b>, przepisujesz pierwszą liczbę bez zmian (przesuniętą w lewo),</li>
+      <li>jeśli to <b>zero</b>, wpisujesz same zera.</li>
+    </ul>
+    <p>Żadnej tabliczki mnożenia. Tylko „przepisz albo nie" i dodawanie. A „przesunięcie w lewo" to dopisanie zera na końcu, dokładnie jak mnożenie przez dziesięć w zwykłych liczbach, tylko tutaj każde przesunięcie podwaja.</p>
+
+    <div class="widget">
+      <p class="wt">Mnożenie pisemne na bitach. Klikaj bity obu liczb, potem „Następny wiersz"</p>
+      <div class="mul" id="mul"></div>
+      <div class="controls">
+        <button class="btn primary" id="mstep">Następny wiersz</button>
+        <button class="btn" id="mall">Do końca</button>
+        <button class="btn" id="mreset">Od nowa</button>
+        <button class="btn" data-m="5,3">5 razy 3</button>
+        <button class="btn" data-m="13,11">13 razy 11</button>
+        <button class="btn" data-m="15,15">15 razy 15</button>
+      </div>
+      <div class="say" id="mSay"></div>
+    </div>
+
+    <p>Sumowanie w tej zabawce wykonuje ten sam sumator z 40 bramek, który rozkładałeś na części w rozdziale „Liczenie z bramek". Pomnożenie dwóch liczb czterobitowych to cztery razy „przepisz albo nie" i trzy dodawania. Prawdziwe układy mnożące robią to samo, tylko wszystkie wiersze sumują naraz sprytnie ułożoną siatką sumatorów, zamiast po kolei.</p>
+
+    <details class="box quiz">
+      <summary>Wagi modelu to liczby z przecinkiem, a nie całkowite. Jak mnoży się takie liczby?</summary>
+      <p>Liczba z przecinkiem składa się z trzech pól: znaku, skali i cyfr (rozdział „Bity i znaczenie"). Mnożenie dwóch takich liczb to trzy proste działania obok siebie. Cyfry mnoży się przez siebie tak jak powyżej. Skale się <b>dodaje</b> (bo „milion razy tysiąc" to „miliard": sześć zer i trzy zera dają dziewięć). Znaki porównuje jedna bramka ALBO: dwa takie same dają plus, dwa różne minus. Znów nic nowego, tylko znane klocki inaczej połączone.</p>
+    </details>
+
+    <h2>Tu ścieżka łączy się z pniem</h2>
+    <p>Zeszliśmy od rozmowy z modelem do jednego mnożenia, a z mnożenia do kilku dodawań. Niżej nie ma już niczego, co byłoby właściwe dla sztucznej inteligencji. Dodawanie wykonuje sumator z rozdziału <a href="t4.html">„Liczenie z bramek"</a>, zbudowany z bramek, a te z tranzystorów, w których pod bramką zbierają się elektrony. Model językowy i symulacja piasku różnią się tym, <b>jakie liczby</b> leżą w pamięci i w jakiej kolejności się je mnoży. Krzem pod spodem robi dokładnie to samo.</p>
+
+    <div class="box key">
+      <span class="tag">Zapamiętaj</span>
+      <p>Nie ma osobnego „sprzętu do myślenia". Jest sprzęt do bardzo szybkiego mnożenia i dodawania ogromnej liczby liczb naraz. To, że z tych mnożeń wychodzi tekst, który ma sens, wynika wyłącznie z tego, jakie wagi wpisano do pamięci podczas uczenia.</p>
+    </div>
+
+    <div class="box scale">
+      <span class="tag">Skala</span>
+      <p>Nowoczesna karta przeznaczona do sztucznej inteligencji wykonuje setki bilionów mnożeń i dodawań na sekundę i pobiera przy tym mniej więcej tyle prądu co kuchenka mikrofalowa. Duże modele działają na wielu takich kartach jednocześnie, a wagi jednego modelu zajmują dziesiątki albo setki gigabajtów pamięci. Dlatego modele językowe działają w wielkich centrach danych, a na telefonie mieszczą się tylko ich małe wersje.</p>
+    </div>
+
+    <details class="box simpl">
+      <summary>Co tu uprościłem</summary>
+      <p>Wyścig pokazuje samą zasadę; prawdziwe proporcje są dużo bardziej skrajne, bo karta graficzna ma tysiące jednostek, a do tego specjalne układy, które mnożą całe tabele liczb za jednym zamachem. Żeby oszczędzić pamięć i czas, wagi często zapisuje się mniej dokładnie, na przykład na ośmiu bitach zamiast trzydziestu dwóch, co prawie nie pogarsza odpowiedzi. Wąskim gardłem bywa też nie samo liczenie, lecz dowożenie liczb z pamięci do jednostek liczących, czyli to samo zjawisko „blat kontra piwnica", które opisuję w ścieżce o bazach danych.</p>
+    </details>
+  </section>
+</main>
+<script type="module" src="../js/chapters/c3.js"></script>
+</body>
+</html>

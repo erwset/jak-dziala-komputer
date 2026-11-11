@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Krzem i elektrony · Jak działa komputer</title>
+<script src="../js/theme.js"></script>
+<link rel="stylesheet" href="../css/style.css">
+<script type="importmap">{"imports":{"three":"../vendor/three/build/three.module.js","three/addons/":"../vendor/three/examples/jsm/"}}</script>
+<style>
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: .82rem; color: var(--muted); margin-top: 8px; }
+  .legend i { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+  #litho rect, #litho path, #litho line { transition: opacity .25s; }
+  #litho text { fill: var(--muted); font: 500 12px var(--font); }
+</style>
+</head>
+<body data-chapter="t8">
+<main>
+  <p class="lead">Jesteśmy na dnie. Tranzystor to kran odkręcany napięciem, ale dlaczego kawałek krzemu w ogóle potrafi być kranem? Żeby to zrozumieć, trzeba zejść do pojedynczych atomów i elektronów. Bez wzorów, za to z parkingiem.</p>
+
+  <div class="frames">
+    <div><b>Skąd przychodzimy</b><p>Z tranzystora, który przewodzi albo nie, zależnie od napięcia na bramce.</p></div>
+    <div><b>Co tu zobaczysz</b><p>Kryształ krzemu, dlaczego prawie nie przewodzi, jak to zmienić domieszką i jak napięcie tworzy ścieżkę dla elektronów.</p></div>
+    <div><b>Dokąd idziemy</b><p>Niżej już się nie da. Stąd wracamy na powierzchnię, do ekranu.</p></div>
+  </div>
+
+  <section>
+    <h2>Kryształ: atomy trzymające się za ręce</h2>
+    <p>Krzem to pierwiastek, który jest głównym składnikiem zwykłego piasku (i tu symulacja piasku zatacza zabawne koło). Oczyszczony i ułożony w idealnie regularny kryształ wygląda jak na scenie poniżej. Każdy atom ma cztery „ręce", czyli cztery <span class="t" data-t="elektron">elektrony</span> zewnętrzne, i każdą trzyma jednego sąsiada. Wszystkie ręce są zajęte. Żaden elektron nie jest wolny, więc nie ma czemu płynąć: czysty krzem w niskiej temperaturze prawie nie przewodzi prądu.</p>
+
+    <div class="widget">
+      <p class="wt">Kryształ krzemu. Obracaj myszką albo palcem</p>
+      <div class="stage3d" id="lattice" style="height:400px"></div>
+      <div class="controls">
+        <button class="btn active" data-dop="">Czysty krzem</button>
+        <button class="btn" data-dop="N">Dosyp atom fosforu</button>
+        <button class="btn" data-dop="P">Dosyp atom boru</button>
+      </div>
+      <div class="legend"><span><i style="background:#93a7c4"></i>atom krzemu</span><span><i style="background:#35c46b"></i>atom fosforu</span><span><i style="background:#ff5f86"></i>atom boru</span><span><i style="background:#3aa0ff"></i>wolny elektron</span><span><i style="background:#ffffff;border:2px solid #ff6f95"></i>dziura (brakujący elektron)</span></div>
+      <div class="say" id="latSay"></div>
+    </div>
+
+    <p>Teraz najważniejsza sztuczka całej elektroniki, czyli <span class="t" data-t="domieszkowanie">domieszkowanie</span>. Podmień jeden atom krzemu na atom innego pierwiastka:</p>
+    <ul>
+      <li><b>Fosfor</b> ma pięć rąk zamiast czterech. Cztery złapią sąsiadów, piąta nie ma kogo. Ten piąty elektron jest luźny i może wędrować po krysztale. Krzem z taką domieszką nazywa się <b>typem N</b>.</li>
+      <li><b>Bor</b> ma tylko trzy ręce. Jednemu sąsiadowi nie ma czego podać: w tym miejscu brakuje elektronu. To puste miejsce nazywa się <span class="t" data-t="dziura">dziurą</span>. Sąsiedni elektron może w nie wskoczyć, zostawiając dziurę u siebie, i tak dziura wędruje po krysztale. Krzem z taką domieszką to <b>typ P</b>.</li>
+    </ul>
+    <p>Wystarczy jeden atom domieszki na milion atomów krzemu, żeby przewodzenie wzrosło nawet miliony razy.</p>
+
+    <h2>Piętra parkingu, czyli pasma</h2>
+    <div class="box analogy">
+      <span class="tag">Analogia</span>
+      <p>Elektrony w krysztale nie mogą mieć dowolnej energii. Mogą przebywać tylko na określonych „piętrach", które fizycy nazywają <span class="t" data-t="pasmo">pasmami</span>. Wyobraź sobie parking piętrowy bez ramp między piętrami. <b>Dolne piętro</b> to elektrony zajęte trzymaniem atomów za ręce. Jest zapchane do ostatniego miejsca, więc żaden samochód nie może się ruszyć, choćby chciał. <b>Górne piętro</b> jest puste: samochód, który by się tam znalazł, mógłby jeździć swobodnie. Między piętrami jest <b>przerwa</b>, w której stać nie wolno. Żeby przeskoczyć na górę, samochód musi dostać porządnego kopniaka, na przykład od ciepła.</p>
+    </div>
+
+    <div class="widget">
+      <p class="wt">Parking elektronów</p>
+      <div class="controls" style="margin:0 0 8px">
+        <button class="btn" data-mat="metal">Metal</button>
+        <button class="btn" data-mat="iso">Izolator (np. szkło)</button>
+        <button class="btn active" data-mat="si">Krzem</button>
+        <span style="width:14px"></span>
+        <button class="btn active" data-pd="">czysty</button>
+        <button class="btn" data-pd="N">z fosforem (typ N)</button>
+        <button class="btn" data-pd="P">z borem (typ P)</button>
+      </div>
+      <canvas class="c2d" id="park"></canvas>
+      <div class="controls">
+        <label class="sl">Temperatura <input type="range" id="temp" min="0" max="100" value="20"></label>
+        <button class="btn primary" id="volt">Przyłóż napięcie</button>
+      </div>
+      <div class="say" id="parkSay"></div>
+    </div>
+
+    <p>To wyjaśnia trzy rodzaje materiałów. W <b>metalu</b> piętro jest zapełnione tylko w połowie, więc samochody zawsze mają gdzie jechać: metal przewodzi zawsze. W <b>izolatorze</b> przerwa między piętrami jest ogromna i nic jej nie przeskoczy. <b><span class="t" data-t="polprzewodnik">Półprzewodnik</span></b>, taki jak krzem, ma przerwę niewielką. Sam z siebie przewodzi marnie, ale łatwo nim sterować: domieszka fosforu dostawia samochody na górne piętro, a domieszka boru robi wolne miejsca na dolnym. Przełączaj przyciski i przykładaj napięcie.</p>
+
+    <details class="box quiz">
+      <summary>Na dolnym piętrze z wolnymi miejscami samochody przesuwają się w prawo. W którą stronę „jedzie" wolne miejsce?</summary>
+      <p>W lewo. Za każdym razem, gdy samochód wjeżdża na wolne miejsce po swojej prawej, zostawia wolne miejsce tam, gdzie stał, czyli po lewej. Dlatego fizycy traktują dziurę jak osobną „cząstkę" z ładunkiem dodatnim, która płynie w stronę przeciwną do elektronów. Tak naprawdę ruszają się tylko elektrony, ale łatwiej śledzić jedno puste miejsce niż cały tłum samochodów wokół niego.</p>
+    </details>
+
+    <h2>Styk dwóch rodzajów krzemu</h2>
+    <p>Sam krzem typu N albo typu P to jeszcze nic ciekawego: po prostu przewodzi. Ciekawie robi się na <b>granicy</b> między nimi. Tuż przy styku wolne elektrony ze strony N wpadają w dziury po stronie P i nawzajem się znoszą. Powstaje wąski pas, w którym nie ma niczego ruchomego: ani wolnych elektronów, ani dziur. Taki pas działa jak izolator. A najlepsze jest to, że jego szerokością da się sterować napięciem.</p>
+
+    <div class="widget">
+      <p class="wt">Złącze: krzem typu P z lewej, typu N z prawej</p>
+      <canvas class="c2d" id="pn"></canvas>
+      <div class="controls">
+        <button class="btn active" data-pn="0">Bez napięcia</button>
+        <button class="btn" data-pn="1">Plus po stronie P</button>
+        <button class="btn" data-pn="2">Plus po stronie N</button>
+      </div>
+      <div class="legend"><span><i style="background:var(--electron)"></i>wolny elektron</span><span><i style="background:var(--hole)"></i>dziura</span></div>
+      <div class="say" id="pnSay"></div>
+    </div>
+
+    <p>Złącze przewodzi więc prąd tylko w jedną stronę. To już jest pierwszy element elektroniczny: dioda. A <span class="t" data-t="tranzystor">tranzystor</span> to dwa takie złącza ustawione tyłem do siebie, z jednym sprytnym dodatkiem.</p>
+
+    <h2>Tranzystor od środka</h2>
+    <p>Poniżej jest tranzystor typu N w przekroju. Na dole krzem typu P. Wtopione w niego dwie wyspy typu N: <b>źródło</b> i <b>dren</b>, to są dwa końce „rury". Między wyspami leży krzem typu P, więc po drodze są dwa złącza ustawione przeciwnie: w którąkolwiek stronę próbowałby popłynąć prąd, jedno z nich blokuje. Kran jest zakręcony.</p>
+    <p>Nad przerwą między wyspami leży cieniutka warstwa izolatora, a na niej metalowa <b>bramka</b>. Przesuń suwak, żeby podać na nią napięcie.</p>
+
+    <div class="widget">
+      <p class="wt">Przekrój tranzystora. Obracaj myszką albo palcem, napięcie ustaw suwakiem</p>
+      <div class="stage3d" id="mos" style="height:430px"></div>
+      <div class="controls">
+        <label class="sl">Napięcie na bramce <input type="range" id="vg" min="0" max="100" value="0" style="width:260px"> <span class="num" id="vgTxt"></span></label>
+        <button class="btn" id="v0">Zero</button>
+        <button class="btn" id="v1">Jedynka</button>
+      </div>
+      <div class="legend"><span><i style="background:#3aa0ff"></i>wolne elektrony</span><span><i style="background:#ff6f95"></i>dziury</span></div>
+      <div class="say" id="mosSay"></div>
+    </div>
+
+    <p>Oto, co się dzieje. Bramka naładowana dodatnio <b>przyciąga elektrony</b> i <b>odpycha dziury</b> przez izolator, choć sama niczego nie dotyka. Przy małym napięciu dziury tylko odsuwają się w głąb. Przy dostatecznie dużym tuż pod izolatorem zbiera się tyle elektronów, że cienka warstewka krzemu typu P zaczyna zachowywać się jak typ N. Powstaje <span class="t" data-t="kanal">kanał</span>: most z elektronów łączący źródło z drenem. Kran odkręcony. Zdejmij napięcie, a elektrony się rozejdą i most zniknie.</p>
+
+    <div class="box key">
+      <span class="tag">Dno podróży</span>
+      <p>To jest najgłębszy poziom. Jedynka w komputerze to w ostatecznym rozrachunku <b>kilkaset elektronów zgromadzonych pod bramką tranzystora</b>, które otwierają drogę dla prądu. Wszystko powyżej, czyli bramki, sumator, procesor, program, ziarnko piasku na ekranie, to coraz większe wzory ułożone z miliardów takich mostków, powstających i znikających miliardy razy na sekundę.</p>
+    </div>
+
+    <details class="box quiz">
+      <summary>Przez izolator pod bramką prąd nie płynie. Dlaczego to takie ważne?</summary>
+      <p>Bo dzięki temu sterowanie tranzystorem prawie nic nie kosztuje. Bramkę wystarczy raz „napełnić" ładunkiem i można tak trzymać bez dalszego zużycia prądu, jak naelektryzowany balonik trzymany nad kartką. Gdyby prąd stale uciekał przez bramkę, miliardy tranzystorów zużywałyby ogromną moc nawet w bezruchu. W dzisiejszych tranzystorach izolator ma grubość zaledwie kilku warstw atomów i odrobina ładunku jednak przez niego przecieka, co jest jednym z głównych problemów dalszego zmniejszania.</p>
+    </details>
+
+    <details class="box quiz">
+      <summary>Czy elektron, który wszedł do przewodu z jednej strony, musi dobiec do drugiego końca, żeby dotarł tam sygnał?</summary>
+      <p>Nie. Pojedyncze elektrony w przewodzie pełzną zaskakująco wolno, ułamek milimetra na sekundę. Ale przewód jest nimi wypełniony jak rura wodą. Gdy wepchniesz trochę wody z jednej strony, z drugiej wypływa natychmiast, choć to zupełnie inna woda. Sygnał, czyli „popchnięcie", biegnie przewodem z prędkością bliską prędkości światła. Tylko dlatego procesor może tykać miliardy razy na sekundę.</p>
+    </details>
+
+    <h2>Jak się to produkuje</h2>
+    <p>Nikt nie układa atomów pęsetą. Chipy wytwarza się metodą podobną do robienia odbitek fotograficznych, zwaną <span class="t" data-t="litografia">litografią</span>: wzór całej warstwy naraz „naświetla się" na krzemie.</p>
+    <div class="widget">
+      <p class="wt">Jedna warstwa chipa w sześciu krokach (przekrój płytki z boku)</p>
+      <div class="hs"><svg id="litho" viewBox="0 0 620 250" style="width:100%;max-width:720px;height:auto;display:block;margin:0 auto;--minw:500px"></svg></div>
+      <div id="lithoSteps"></div>
+    </div>
+
+    <div class="box scale">
+      <span class="tag">Skala</span>
+      <p>Odległość między sąsiednimi atomami krzemu to około jednej czwartej <span class="t" data-t="nanometr">nanometra</span>. Kanał tranzystora ma długość kilkunastu nanometrów, czyli zaledwie kilkadziesiąt atomów w rzędzie. Izolator pod bramką ma grubość kilku warstw atomów. Krzem używany do produkcji jest najczystszą substancją wytwarzaną przemysłowo: na miliard atomów trafia się mniej niż jeden obcy. Światło, którym naświetla się dziś wzory, ma falę tak krótką, że pochłania je nawet powietrze, więc cały proces odbywa się w próżni.</p>
+    </div>
+
+    <details class="box simpl">
+      <summary>Co tu uprościłem</summary>
+      <p>Obraz „atomów z rękami" i „parkingu" to analogie. Naprawdę elektrony nie są kulkami krążącymi po krysztale, lecz zachowują się jak rozmyte fale, a pasma wynikają z praw mechaniki kwantowej. Analogie dobrze jednak oddają to, co ważne: że są dozwolone piętra i zakazana przerwa oraz że o przewodzeniu decyduje, czy na piętrze są wolne miejsca. Współczesne tranzystory nie są też płaskie jak na scenie: kanał ma kształt cienkiej płetwy albo kilku wstążek, które bramka obejmuje z kilku stron, żeby lepiej nad nim panować. Zasada działania jest ta sama.</p>
+    </details>
+  </section>
+</main>
+<script type="module" src="../js/chapters/t8.js"></script>
+</body>
+</html>

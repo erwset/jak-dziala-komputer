@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Liczenie z bramek · Jak działa komputer</title>
+<script src="../js/theme.js"></script>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  .addgrid { display: grid; grid-template-columns: auto repeat(8, 34px) auto; gap: 5px 4px; align-items: center; justify-content: start; }
+  .addgrid .lab { font-size: .82rem; color: var(--muted); padding-right: 8px; white-space: nowrap; }
+  .addgrid .val { font: 600 1rem var(--mono); padding-left: 10px; white-space: nowrap; }
+  .addgrid .bit { width: 34px; }
+  .addgrid .car { text-align: center; font: 600 .8rem var(--mono); color: var(--muted); height: 20px; }
+  .addgrid .car.on { color: var(--on); }
+  .addgrid .col { outline: 2px solid var(--electron); outline-offset: 1px; }
+  .addgrid hr { grid-column: 1 / -1; border: 0; border-top: 2px solid var(--muted); width: 100%; margin: 2px 0; }
+  table.rule td { padding: 4px 12px; }
+  #dp rect { fill: var(--panel2); stroke: var(--muted); stroke-width: 1.5; }
+  #dp rect.act { stroke: var(--on); stroke-width: 3; }
+  #dp text { fill: var(--ink); font: 600 13px var(--font); text-anchor: middle; }
+  #dp text.s { font: 400 11px var(--font); fill: var(--muted); }
+  #dp text.mono { font: 600 15px var(--mono); }
+  #dp .p { fill: none; stroke: var(--off); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+  #dp .p.on { stroke: var(--on); filter: drop-shadow(0 0 3px var(--on-glow)); }
+  #dp .ah { fill: var(--off); } #dp .ah.on { fill: var(--on); }
+</style>
+</head>
+<body data-chapter="t4">
+<main>
+  <p class="lead">Procesor „ma sumator". Ale czym jest sumator? Okazuje się, że dodawanie da się zbudować z kilku rodzajów bardzo prostych klocków, z których żaden nie umie liczyć.</p>
+
+  <div class="frames">
+    <div><b>Skąd przychodzimy</b><p>Z procesora, w którym polecenie DODAJ kazało dodać dwie ośmiobitowe liczby.</p></div>
+    <div><b>Co tu zobaczysz</b><p>Jak dodawanie rozkłada się na kolumny, a kolumna na pięć bramek. I jak polecenie wybiera, co ma się wydarzyć.</p></div>
+    <div><b>Dokąd schodzimy</b><p>Do samych bramek: czym są te klocki.</p></div>
+  </div>
+
+  <section>
+    <h2>Dodawanie w słupku, tylko prostsze</h2>
+    <p>Przypomnij sobie dodawanie pisemne ze szkoły. Idziesz od prawej kolumny do lewej. W każdej kolumnie dodajesz dwie cyfry (i ewentualnie to, co przeszło z kolumny obok), zapisujesz wynik, a jeśli wyszło za dużo, <b>przenosisz jeden dalej</b>. Nie musisz umieć dodawać wielkich liczb. Wystarczy, że umiesz obsłużyć jedną kolumnę i powtarzasz to kilka razy.</p>
+    <p>Na bitach jest dokładnie tak samo, tylko łatwiej, bo w kolumnie mogą być tylko zera i jedynki. Wystarczy policzyć, ile jedynek jest w kolumnie (licząc też <span class="t" data-t="przeniesienie">przeniesienie</span> z prawej):</p>
+    <table class="vals rule" style="max-width:520px">
+      <tr><th>Ile jedynek w kolumnie</th><th>Co wpisać pod kreską</th><th>Co przenieść w lewo</th></tr>
+      <tr><td>żadnej</td><td class="num">0</td><td class="num">0</td></tr>
+      <tr><td>jedna</td><td class="num">1</td><td class="num">0</td></tr>
+      <tr><td>dwie</td><td class="num">0</td><td class="num">1</td></tr>
+      <tr><td>trzy</td><td class="num">1</td><td class="num">1</td></tr>
+    </table>
+    <p>Ta tabelka to całe „umienie dodawania". Teraz trzeba ją tylko zbudować ze sprzętu.</p>
+
+    <h2>Jedna kolumna z pięciu bramek</h2>
+    <p><span class="t" data-t="bramka">Bramka</span> to klocek z jednym lub dwoma wejściami i jednym wyjściem. Każda stosuje jedną sztywną regułę. Tu potrzebne są trzy rodzaje:</p>
+    <ul>
+      <li><b>ALBO</b>: wyjście świeci, gdy świeci <b>dokładnie jedno</b> z dwóch wejść.</li>
+      <li><b>I</b>: wyjście świeci, gdy świecą <b>oba</b> wejścia.</li>
+      <li><b>LUB</b>: wyjście świeci, gdy świeci <b>przynajmniej jedno</b> wejście.</li>
+    </ul>
+    <p>Poniżej jest układ jednej kolumny. Ma trzy wejścia: bit pierwszej liczby, bit drugiej liczby i przeniesienie z kolumny po prawej. Ma dwa wyjścia: wynik tej kolumny i przeniesienie do kolumny po lewej. Klikaj wejścia i sprawdź, czy wyjścia zgadzają się z tabelką.</p>
+
+    <div class="widget">
+      <p class="wt">Sumator jednej kolumny. Klikaj kółka po lewej</p>
+      <div id="fa"></div>
+      <div class="say" id="faSay"></div>
+      <p class="hint">Pomarańczowy przewód niesie jedynkę, szary zero. Gdzie przewody się krzyżują z przerwą, tam się nie łączą.</p>
+    </div>
+
+    <details class="box quiz">
+      <summary>Dlaczego do „wyniku" użyto bramek ALBO, a do „przeniesienia" bramek I oraz LUB?</summary>
+      <p>Wynik ma być jedynką, gdy jedynek w kolumnie jest nieparzyście wiele (jedna albo trzy). Bramka ALBO właśnie to sprawdza dla dwóch wejść, a dwie takie bramki pod rząd sprawdzają to dla trzech. Przeniesienie ma być jedynką, gdy jedynek jest co najmniej dwie: albo oba bity liczb są jedynkami (pierwsza bramka I), albo dokładnie jeden z nich i do tego przeniesienie z prawej (druga bramka I). Bramka LUB zbiera oba przypadki.</p>
+    </details>
+
+    <h2>Osiem kolumn spiętych w łańcuch</h2>
+    <p>Żeby dodać dwie liczby ośmiobitowe, bierze się osiem kopii tego samego układu i łączy: przeniesienie wychodzące z jednej kolumny wchodzi do następnej po lewej. Razem 40 bramek. To jest <b>dokładnie ten sumator</b>, którego używał procesor w poprzednim rozdziale: ta strona naprawdę przelicza tu 40 bramek przy każdym kliknięciu.</p>
+
+    <div class="widget">
+      <p class="wt">Sumator ośmiobitowy: klikaj bity obu liczb</p>
+      <div class="addgrid" id="add"></div>
+      <div class="controls">
+        <button class="btn" data-ex="10,3">Ziarnko: 10 i 3</button>
+        <button class="btn" data-ex="85,43">85 i 43</button>
+        <button class="btn" data-ex="127,1">127 i 1 (długa fala)</button>
+        <button class="btn" data-ex="250,10">250 i 10 (za dużo)</button>
+        <button class="btn primary" id="wave">Pokaż kolumna po kolumnie</button>
+      </div>
+      <div class="say" id="addSay"></div>
+    </div>
+
+    <details class="box quiz">
+      <summary>Kliknij „127 i 1" i przyjrzyj się przeniesieniom. Co z tego wynika dla szybkości komputera?</summary>
+      <p>Przeniesienie musi przejść jak fala przez siedem kolumn, zanim wynik będzie poprawny. Każda bramka potrzebuje odrobiny czasu na reakcję, więc im dłuższy łańcuch, tym dłużej trzeba czekać. <b>Zegar procesora nie może tykać szybciej, niż trwa najdłuższa taka fala</b>, bo inaczej odczytałby wynik, zanim ten zdąży się ustalić. To jedna z rzeczy, które ograniczają szybkość procesorów. Prawdziwe sumatory mają dodatkowe bramki, które obliczają przeniesienia „na skróty".</p>
+    </details>
+
+    <h2>Zwrotnice: jak polecenie wybiera, co się stanie</h2>
+    <p>Mamy sumator. Ale procesor raz dodaje, raz tylko kopiuje liczbę, raz zapisuje ją do pamięci. Skąd wie, kiedy co? Wewnątrz procesora wszystkie części są połączone przewodami na stałe, a na tych przewodach siedzą <b>zwrotnice</b>: przełączniki, które drogę otwierają albo zamykają. Cztery bity bieżącego polecenia wchodzą do małego układu z bramek (nazywa się go dekoderem), który dla każdego polecenia zapala osobny przewód. Ten przewód otwiera odpowiednie zwrotnice.</p>
+
+    <div class="widget">
+      <p class="wt">Wnętrze procesora: wybierz polecenie i zobacz, które drogi się otwierają</p>
+      <div class="controls" style="margin:0 0 8px" id="ops"></div>
+      <div class="hs"><svg id="dp" viewBox="0 0 720 330" style="width:100%;height:auto;display:block;--minw:600px"></svg></div>
+      <div class="say" id="dpSay"></div>
+    </div>
+
+    <div class="box key">
+      <span class="tag">Zapamiętaj</span>
+      <p>Procesor niczego nie „rozumie" ani nie „postanawia". Bity polecenia to napięcia na przewodach. Przechodzą przez bramki i otwierają jedne drogi, a zamykają inne. Liczby płyną otwartymi drogami przez układy takie jak sumator, a wynik zostaje zapamiętany przy następnym tyknięciu zegara. To wszystko.</p>
+    </div>
+
+    <div class="box scale">
+      <span class="tag">Skala</span>
+      <p>Sumator 64-bitowy w prawdziwym procesorze to kilkaset bramek. Układ mnożący dwie liczby to już kilka–kilkanaście tysięcy. Cały nowoczesny procesor zawiera kilka miliardów bramek, ale ogromna większość z nich nie liczy, tylko <b>pamięta</b>: to podręczna pamięć na dane, o której była mowa w rozdziale o adresach.</p>
+    </div>
+
+    <details class="box simpl">
+      <summary>Co tu uprościłem</summary>
+      <p>Pokazałem dodawanie liczb całkowitych. Dodawanie liczb z przecinkiem (a takie opisują ziarnko) jest bardziej złożone: najpierw trzeba wyrównać skale obu liczb, potem dodać cyfry, potem poprawić wynik. Robi to osobny, większy układ, ale zbudowany z tych samych bramek i z takim samym sumatorem w środku. Odejmowanie nie wymaga nowego układu: wystarczy drugą liczbę odpowiednio odwrócić i przepuścić przez ten sam sumator (zabawkowy procesor tak właśnie robi).</p>
+    </details>
+  </section>
+</main>
+<script type="module" src="../js/chapters/t4.js"></script>
+</body>
+</html>

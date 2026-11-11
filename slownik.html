@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Słowniczek · Jak działa komputer</title>
+<script src="js/theme.js"></script>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main>
+  <div class="kicker">Pod ręką</div>
+  <h1>Słowniczek</h1>
+  <p class="lead">Wszystkie trudniejsze słowa z tej strony, wyjaśnione prostym językiem.</p>
+  <div id="terms"></div>
+</main>
+<script type="module">
+  import { initPage } from './js/core/layout.js';
+  import { TERMS } from './js/core/glossary.js';
+  import { el } from './js/core/util.js';
+  initPage();
+  const box = document.getElementById('terms');
+  Object.values(TERMS).sort((a, b) => a[0].localeCompare(b[0], 'pl')).forEach(([name, text]) =>
+    box.append(el('div', { class: 'box' }, el('b', {}, name), el('p', {}, text))));
+</script>
+</body>
+</html>

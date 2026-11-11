@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bramki logiczne · Jak działa komputer</title>
+<script src="../js/theme.js"></script>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  .gates { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+  .gcard { background: var(--panel2); border-radius: 12px; padding: 10px 12px; }
+  .gcard h3 { margin: 0; font-size: 1rem; } .gcard h3 small { color: var(--muted); font-weight: 400; }
+  .gcard p { margin: 2px 0 0; font-size: .86rem; color: var(--muted); min-height: 2.6em; }
+  .gcard svg.circ .halo { stroke: var(--panel2); }
+  .gcard svg.circ .gate rect { fill: var(--panel); }
+</style>
+</head>
+<body data-chapter="t5">
+<main>
+  <p class="lead">Sumator składał się z bramek. Teraz przyjrzymy się samym bramkom: najprostszym klockom, które z dwóch sygnałów robią jeden według sztywnej reguły. Całe „myślenie" komputera to miliardy takich klocków.</p>
+
+  <div class="frames">
+    <div><b>Skąd przychodzimy</b><p>Z sumatora i zwrotnic, zbudowanych z bramek trzech rodzajów.</p></div>
+    <div><b>Co tu zobaczysz</b><p>Pięć podstawowych bramek i dowód, że wszystkie da się zbudować z jednej.</p></div>
+    <div><b>Dokąd schodzimy</b><p>Do pamięci: jak z bramek zrobić coś, co pamięta.</p></div>
+  </div>
+
+  <div class="box analogy">
+    <span class="tag">Analogia</span>
+    <p>Bramki znasz z domowej instalacji elektrycznej. Dwa włączniki <b>jeden za drugim</b> na tym samym przewodzie: lampa świeci tylko wtedy, gdy oba są włączone. To bramka <b>I</b>. Dwa włączniki <b>obok siebie</b>, każdy na własnej odnodze: wystarczy którykolwiek. To bramka <b>LUB</b>. Włączniki schodowe na dole i na górze schodów: przestawienie dowolnego z nich zmienia stan lampy. To bramka <b>ALBO</b>.</p>
+  </div>
+
+  <section>
+    <div class="widget">
+      <p class="wt">Pięć bramek. Klikaj kółka po lewej stronie każdej z nich</p>
+      <div class="gates" id="gates"></div>
+    </div>
+
+    <p>Zwróć uwagę, jak mało tu jest. Bramka nie liczy, nie pamięta i niczego nie wie. Ma dwa przewody wchodzące, jeden wychodzący i jedną regułę, która nigdy się nie zmienia. A jednak w poprzednim rozdziale pięć takich klocków wystarczyło, żeby dodać jedną kolumnę, a czterdzieści, żeby dodać dwie liczby.</p>
+
+    <details class="box quiz">
+      <summary>Chcesz, żeby alarm zawył, gdy drzwi są otwarte, a system jest uzbrojony. Której bramki użyjesz? A jeśli ma zawyć, gdy otwarte są drzwi lub okno?</summary>
+      <p>W pierwszym przypadku bramki <b>I</b>: oba warunki muszą być spełnione naraz. W drugim bramki <b>LUB</b>: wystarczy jeden. A całość („uzbrojony i do tego otwarte drzwi lub okno") to bramka LUB, której wyjście wchodzi do bramki I. Właśnie tak, przez łączenie wyjść z wejściami, z prostych reguł powstają złożone.</p>
+    </details>
+
+    <h2>Wszystko z jednego klocka</h2>
+    <p>Najciekawsza jest bramka <b>NIE-I</b>. Daje jedynkę zawsze, <b>z wyjątkiem</b> sytuacji, gdy oba wejścia są jedynkami. Wygląda niepozornie, ale ma niezwykłą własność: z samych bramek NIE-I da się zbudować każdą inną. Wybierz poniżej, którą bramkę chcesz złożyć, i sprawdź klikając, że zachowuje się jak oryginał.</p>
+
+    <div class="widget">
+      <p class="wt">Inne bramki złożone wyłącznie z bramek NIE-I</p>
+      <div class="controls" style="margin:0 0 8px" id="pick"></div>
+      <div id="nand"></div>
+      <div class="say" id="nandSay"></div>
+    </div>
+
+    <p>Dlaczego to ważne? Bo fabryka chipów nie musi umieć robić stu rodzajów skomplikowanych elementów. Wystarczy, że potrafi zrobić <b>jeden prosty klocek</b>, bardzo mały, bardzo tani i w miliardach sztuk. Cała reszta to kwestia połączeń między nimi.</p>
+
+    <details class="box quiz">
+      <summary>Bramka NIE zbudowana z NIE-I ma oba wejścia podpięte do tego samego przewodu. Dlaczego to działa?</summary>
+      <p>Skoro oba wejścia dostają to samo, możliwe są tylko dwie sytuacje: oba są zerami albo oba jedynkami. NIE-I daje zero tylko wtedy, gdy oba wejścia są jedynkami. Czyli: wchodzi jedynka, wychodzi zero; wchodzi zero, wychodzi jedynka. To dokładnie bramka NIE.</p>
+    </details>
+
+    <div class="box key">
+      <span class="tag">Zapamiętaj</span>
+      <p>Każdą regułę, która z jednych bitów robi inne bity (dodawanie, porównywanie, wybór drogi, dekodowanie polecenia), da się zbudować z bramek. A każdą bramkę da się zbudować z jednego rodzaju klocka. Reszta drogi w dół to pytanie, z czego fizycznie zrobić ten jeden klocek.</p>
+    </div>
+
+    <div class="box scale">
+      <span class="tag">Skala</span>
+      <p>Prawdziwa bramka w dzisiejszym procesorze ma szerokość kilkudziesięciu <span class="t" data-t="nanometr">nanometrów</span>: na grubości ludzkiego włosa zmieściłoby się ich ponad tysiąc w rzędzie. Na zmianę wejścia reaguje w kilka bilionowych części sekundy. W czasie jednego mrugnięcia okiem zdążyłaby się przełączyć kilkadziesiąt miliardów razy.</p>
+    </div>
+
+    <details class="box simpl">
+      <summary>Co tu uprościłem</summary>
+      <p>Prawdziwe chipy nie składają się wyłącznie z bramek NIE-I. Projektanci mają do dyspozycji bibliotekę kilkuset gotowych klocków (bramki o trzech i czterech wejściach, gotowe sumatory jednej kolumny, elementy pamięci), bo tak wychodzi szybciej i oszczędniej. Ale każdy z tych klocków dałoby się zastąpić odpowiednią liczbą bramek NIE-I, więc zasada pozostaje prawdziwa. Pominąłem też to, że bramka nie reaguje natychmiast: sygnał potrzebuje chwili, by przez nią przejść, co ogranicza szybkość zegara.</p>
+    </details>
+  </section>
+</main>
+<script type="module" src="../js/chapters/t5.js"></script>
+</body>
+</html>

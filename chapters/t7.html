@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tranzystory · Jak działa komputer</title>
+<script src="../js/theme.js"></script>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  svg.cm { width: 100%; height: auto; display: block; user-select: none; }
+  svg.cm .halo { fill: none; stroke: var(--panel); stroke-width: 10; }
+  svg.cm .w { fill: none; stroke: var(--off); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; transition: stroke .12s; }
+  svg.cm .w.hi { stroke: var(--on); filter: drop-shadow(0 0 3px var(--on-glow)); }
+  svg.cm .w.fl { stroke-dasharray: 2 7; }
+  svg.cm .rail { stroke: var(--muted); stroke-width: 5; stroke-linecap: round; }
+  svg.cm .rail.hi { stroke: var(--on); }
+  svg.cm .mos .ch { fill: var(--panel); stroke: var(--muted); stroke-width: 2; transition: fill .12s; }
+  svg.cm .mos.open .ch { fill: var(--on); stroke: var(--on); }
+  svg.cm .mos line, svg.cm .mos circle { stroke: var(--muted); stroke-width: 3; stroke-linecap: round; fill: var(--panel); }
+  svg.cm text { fill: var(--ink); font: 600 13px var(--font); text-anchor: middle; dominant-baseline: central; }
+  svg.cm text.s { font: 400 11.5px var(--font); fill: var(--muted); }
+  svg.cm .pin { cursor: pointer; }
+  svg.cm .pin circle, svg.cm .lampc { fill: var(--off); stroke: var(--muted); stroke-width: 1.5; transition: fill .12s; }
+  svg.cm .pin.on circle, svg.cm .lampc.on { fill: var(--on); stroke: var(--on); filter: drop-shadow(0 0 6px var(--on-glow)); }
+  svg.cm .pin:hover circle { stroke: var(--accent); stroke-width: 3; }
+  svg.cm .pin text { fill: #1a1206; font: 700 13px var(--mono); }
+  .meter { display: grid; grid-template-columns: 190px 1fr 70px; gap: 6px 12px; align-items: center; font-size: .9rem; }
+  .track { height: 22px; border-radius: 6px; position: relative; background: linear-gradient(90deg, var(--off) 0 30%, color-mix(in srgb, var(--hole) 45%, var(--panel2)) 30% 70%, var(--on) 70% 100%); }
+  .track i { position: absolute; top: -4px; bottom: -4px; width: 5px; margin-left: -2.5px; border-radius: 3px; background: var(--ink); transition: left .08s; }
+  .zones { display: grid; grid-template-columns: 30% 40% 30%; font-size: .72rem; color: var(--muted); text-align: center; }
+  @media (max-width: 700px) { .meter { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body data-chapter="t7">
+<main>
+  <p class="lead">Bramka to reguła. Ale reguła sama niczego nie zrobi: coś musi ją fizycznie wykonywać. Tym czymś jest tranzystor, przełącznik bez ruchomych części, którym steruje nie palec, tylko prąd z innego przełącznika.</p>
+
+  <div class="frames">
+    <div><b>Skąd przychodzimy</b><p>Z bramek i pętli pamięci: wiemy, co robią, ale nie z czego są.</p></div>
+    <div><b>Co tu zobaczysz</b><p>Jak z dwóch tranzystorów powstaje bramka NIE, a z czterech NIE-I. I dlaczego napięcie nadaje się na zera i jedynki.</p></div>
+    <div><b>Dokąd schodzimy</b><p>Do wnętrza tranzystora: co się dzieje w samym krzemie.</p></div>
+  </div>
+
+  <div class="box analogy">
+    <span class="tag">Analogia</span>
+    <p>Pomyśl o wodzie w rurach. <span class="t" data-t="napiecie">Napięcie</span> to ciśnienie: jak mocno woda chce płynąć. <span class="t" data-t="prad">Prąd</span> to sam przepływ. <span class="t" data-t="tranzystor">Tranzystor</span> to kran na rurze, ale nietypowy: nie ma pokrętła dla ręki. Zamiast tego odkręca go <b>ciśnienie w trzeciej, cienkiej rurce</b> podłączonej z boku. A skoro kran steruje się ciśnieniem, to wyjście jednego kranu może sterować następnym. I tak powstają łańcuchy, w których krany sterują kranami.</p>
+  </div>
+
+  <section>
+    <h2>Dwa rodzaje kranów</h2>
+    <p>Tranzystor ma trzy końcówki. Dwie to „rura": tędy płynie prąd albo nie. Trzecia, z boku, nazywa się bramką (to niefortunna zbieżność nazw z bramką logiczną, ale tak już zostało) i decyduje, czy rura jest drożna. Są dwa rodzaje, działające na odwrót:</p>
+    <ul>
+      <li><b>Typ N</b> przewodzi, gdy na bramce <b>jest</b> napięcie.</li>
+      <li><b>Typ P</b> przewodzi, gdy na bramce napięcia <b>nie ma</b>. Na rysunkach oznacza się go małym kółkiem.</li>
+    </ul>
+
+    <div class="widget">
+      <p class="wt">Pojedynczy tranzystor. Kliknij kółko po lewej, żeby podać napięcie na bramkę</p>
+      <div class="row">
+        <div class="grow" style="flex-basis:260px; max-width:360px" id="tapN"></div>
+        <div class="grow" style="flex-basis:260px; max-width:360px" id="tapP"></div>
+      </div>
+      <p class="hint">Pomarańczowe wypełnienie: tranzystor przewodzi. Przerywana, płynąca linia: prąd płynie.</p>
+    </div>
+
+    <h2>Bramka NIE z dwóch tranzystorów</h2>
+    <p>Sztuczka polega na użyciu obu rodzajów naraz, jednego nad drugim. Górny (typ P) łączy wyjście z plusem zasilania. Dolny (typ N) łączy wyjście z minusem. Obaj dostają <b>ten sam</b> sygnał na bramkę, a ponieważ działają na odwrót, zawsze otwarty jest dokładnie jeden.</p>
+
+    <div class="widget">
+      <p class="wt">Bramka NIE: kliknij wejście</p>
+      <div id="inv" style="max-width:620px"></div>
+      <div class="say" id="invSay"></div>
+    </div>
+
+    <p>Zauważ rzecz ważną: gdy nic się nie zmienia, prąd z plusa do minusa <b>nie płynie</b>, bo jeden z kranów zawsze jest zakręcony. Prąd płynie tylko przez krótką chwilę przełączania, kiedy trzeba „napełnić" albo „opróżnić" przewód wyjściowy. Dlatego procesor grzeje się tym bardziej, im szybciej tyka jego zegar: każde przełączenie to mała porcja zużytej energii.</p>
+
+    <h2>Bramka NIE-I z czterech tranzystorów</h2>
+    <p>Teraz klocek, z którego da się zbudować wszystko. Na górze dwa tranzystory typu P <b>obok siebie</b>, na dole dwa typu N <b>jeden za drugim</b>.</p>
+
+    <div class="widget">
+      <p class="wt">Bramka NIE-I: klikaj oba wejścia</p>
+      <div id="nand" style="max-width:680px"></div>
+      <div class="say" id="nandSay"></div>
+    </div>
+
+    <details class="box quiz">
+      <summary>Dlaczego dolne tranzystory stoją jeden za drugim, a górne obok siebie? Przypomnij sobie włączniki światła z rozdziału o bramkach.</summary>
+      <p>Wyjście ma być zerem tylko wtedy, gdy oba wejścia są jedynkami. Zero oznacza połączenie z minusem, więc droga do minusa musi się otworzyć tylko wtedy, gdy przewodzą <b>oba</b> dolne tranzystory: stoją więc jeden za drugim, jak dwa włączniki na jednym przewodzie. W każdej innej sytuacji wyjście ma być jedynką, czyli połączone z plusem. Wystarczy, że <b>którykolwiek</b> górny przewodzi: stoją więc obok siebie, każdy na własnej odnodze.</p>
+    </details>
+
+    <details class="box quiz">
+      <summary>Co by się stało, gdyby przez pomyłkę otworzyły się naraz kran górny i dolny?</summary>
+      <p>Plus połączyłby się bezpośrednio z minusem. To zwarcie: popłynąłby duży prąd, który niczego nie liczy, tylko grzeje. Układ z dwóch przeciwnych rodzajów tranzystorów jest zaprojektowany właśnie tak, żeby to było niemożliwe w spoczynku. Dzieje się to jedynie przez ułamek chwili podczas przełączania, gdy jeden kran jeszcze się nie domknął, a drugi już się uchyla. To drugie źródło ciepła w procesorze.</p>
+    </details>
+
+    <h2>Dlaczego akurat zera i jedynki</h2>
+    <p>Napięcie na przewodzie nigdy nie jest idealne. Zakłócają je sąsiednie przewody, ciepło, drobne różnice między tranzystorami. Gdyby komputer próbował rozróżniać dziesięć poziomów napięcia, drobne zakłócenie zamieniałoby siódemkę w ósemkę. Dlatego rozróżnia tylko dwa: „wyraźnie nisko" i „wyraźnie wysoko", z szeroką strefą niczyją pomiędzy. Co więcej, każda bramka <b>poprawia</b> sygnał: nawet jeśli na wejściu napięcie jest tylko „raczej wysokie", na wyjściu daje czyste zero albo czystą jedynkę.</p>
+
+    <div class="widget">
+      <p class="wt">Zakłócony sygnał przechodzi przez dwie bramki NIE</p>
+      <label class="sl">Napięcie na wejściu <input type="range" id="vin" min="0" max="100" value="78" style="width:260px"> <span class="num" id="vinTxt"></span></label>
+      <label class="sl" style="margin-top:6px"><input type="checkbox" id="noise"> dodaj zakłócenia</label>
+      <div class="meter" style="margin-top:14px">
+        <span></span><div class="zones"><span>na pewno 0</span><span>strefa niczyja</span><span>na pewno 1</span></div><span></span>
+        <span>na wejściu</span><div class="track"><i id="m0"></i></div><span class="num" id="t0"></span>
+        <span>po pierwszej bramce NIE</span><div class="track"><i id="m1"></i></div><span class="num" id="t1"></span>
+        <span>po drugiej bramce NIE</span><div class="track"><i id="m2"></i></div><span class="num" id="t2"></span>
+      </div>
+      <div class="say" id="vSay"></div>
+    </div>
+
+    <div class="box key">
+      <span class="tag">Zapamiętaj</span>
+      <p>Jedynka i zero to nie abstrakcje. Jedynka to przewód połączony przez otwarty tranzystor z plusem zasilania. Zero to przewód połączony z minusem. Każda bramka, każdy bit w pamięci, każde polecenie procesora jest w danej chwili konkretnym układem otwartych i zamkniętych tranzystorów.</p>
+    </div>
+
+    <div class="box scale">
+      <span class="tag">Skala</span>
+      <p>Tranzystor w dzisiejszym procesorze ma kilkadziesiąt <span class="t" data-t="nanometr">nanometrów</span>, czyli jest kilka tysięcy razy mniejszy niż grubość włosa. Przełącza się w kilka bilionowych części sekundy. Napięcie zasilania to mniej niż jeden wolt, mniej niż w baterii-paluszku. W jednym procesorze jest ich od kilkunastu do kilkudziesięciu miliardów: więcej niż ludzi na Ziemi, na płytce wielkości paznokcia.</p>
+    </div>
+
+    <details class="box simpl">
+      <summary>Co tu uprościłem</summary>
+      <p>Tranzystor nie jest idealnym kranem: zakręcony wciąż odrobinę przecieka, a otwarty stawia pewien opór. Te przecieki, pomnożone przez miliardy sztuk, są dziś ważną częścią zużycia energii. Poza tym „zero" i „jedynka" na wyjściu ustalają się nie natychmiast, lecz po krótkiej chwili potrzebnej na przepływ ładunku, i to ta chwila, zsumowana po całym łańcuchu bramek, ogranicza szybkość zegara.</p>
+    </details>
+  </section>
+</main>
+<script type="module" src="../js/chapters/t7.js"></script>
+</body>
+</html>

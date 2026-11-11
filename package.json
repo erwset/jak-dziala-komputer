@@ -1,0 +1,15 @@
+{
+  "name": "computer_work",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Jak działa komputer: interaktywna podróż od ekranu do elektronów",
+  "scripts": {
+    "start": "python serve.py 8765",
+    "test": "node --test tests/engines.test.mjs tests/quantum.test.mjs",
+    "build-sw": "node tools/build-sw.mjs"
+  },
+  "dependencies": {
+    "three": "^0.187.0"
+  }
+}

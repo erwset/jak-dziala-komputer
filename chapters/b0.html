@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zapytanie, które znasz · Jak działa komputer</title>
+<script src="../js/theme.js"></script>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  #tab td, #tab th, #res td, #res th { padding: 3px 9px; font-size: .86rem; }
+  #tab tr.cur td { background: var(--accent-soft); }
+  #tab tr.yes td:first-child { box-shadow: inset 4px 0 0 var(--good); }
+  #tab tr.no td { color: var(--muted); }
+  #tab td.mark { width: 26px; font-weight: 700; }
+  #tab tr.yes td.mark { color: var(--good); } #tab tr.no td.mark { color: var(--hole); }
+  #tab td.chk { outline: 2px solid var(--electron); outline-offset: -2px; }
+  .plan { margin: 8px 0 0; padding-left: 20px; font-size: .9rem; } .plan li { margin: 2px 0; }
+  .tr { font-size: .88rem; color: var(--muted); margin: 6px 0 0; }
+</style>
+</head>
+<body data-chapter="b0">
+<main>
+  <p class="lead">Piszesz jedno zdanie w SQL i po chwili dostajesz wiersze. Wygląda to jak rozmowa z kimś, kto rozumie tabele. Tymczasem pod spodem nie ma ani tabel, ani rozumienia: jest ten sam procesor, który przesuwał ziarnka piasku, i robi dokładnie to samo co wtedy.</p>
+
+  <div class="frames">
+    <div><b>Skąd przychodzimy</b><p>Z okna, w którym wpisujesz zapytanie i oglądasz wynik.</p></div>
+    <div><b>Co tu zobaczysz</b><p>Jak baza wykonuje zapytanie wiersz po wierszu i co robi, zanim w ogóle zacznie.</p></div>
+    <div><b>Dokąd schodzimy</b><p>Do pytania, jak znaleźć właściwe wiersze, nie czytając wszystkich.</p></div>
+  </div>
+
+  <div class="widget">
+    <p class="wt">Tabela zdarzeń z wirtualnej przestrzeni i trzy zapytania do wyboru</p>
+    <div class="controls" style="margin:0 0 10px" id="queries"></div>
+    <div class="code" id="sql"></div>
+    <p class="tr" id="sqlTr"></p>
+    <div class="row" style="margin-top:12px">
+      <div class="grow" style="flex-basis:380px">
+        <h3 style="margin-top:0">Tabela „zdarzenia"</h3>
+        <table class="vals" id="tab"></table>
+      </div>
+      <div class="grow" style="flex-basis:280px">
+        <h3 style="margin-top:0">Plan wykonania</h3>
+        <ol class="plan" id="plan"></ol>
+        <h3>Wynik</h3>
+        <table class="vals" id="res"></table>
+        <p class="hint" id="count"></p>
+      </div>
+    </div>
+    <div class="dock">
+      <div class="say" id="say"></div>
+      <div class="controls">
+        <button class="btn primary" id="next">Następny wiersz</button>
+        <button class="btn" id="all">Do końca</button>
+        <button class="btn" id="reset">Od nowa</button>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <h2>Co baza robi z Twoim zdaniem</h2>
+    <p>Od naciśnięcia „Uruchom" do pierwszego wiersza wyniku dzieją się trzy rzeczy:</p>
+    <ol>
+      <li><b>Rozbiór zdania.</b> Baza czyta zapytanie jak nauczyciel sprawdzający gramatykę: gdzie jest lista kolumn, jaka tabela, jaki warunek. Sprawdza też, czy taka tabela i takie kolumny w ogóle istnieją. Jeśli zrobisz literówkę, to tutaj dostaniesz błąd, zanim cokolwiek zostanie policzone.</li>
+      <li><b>Plan.</b> Baza decyduje, <b>jak</b> to wykonać: od której tabeli zacząć, czy przejść wszystkie wiersze, czy skorzystać ze skrótu. Dla prostego zapytania plan jest krótki, taki jak w zabawce powyżej. Dla złożonego baza rozważa wiele możliwych planów i wybiera ten, który według jej szacunków będzie najszybszy.</li>
+      <li><b>Wykonanie.</b> Plan zamienia się w pętlę: weź wiersz, sprawdź warunek, ewentualnie oddaj. To jest ta część, którą przeklikujesz powyżej.</li>
+    </ol>
+
+    <div class="box analogy">
+      <span class="tag">Analogia</span>
+      <p>SQL to zamówienie w restauracji. Mówisz, <b>co</b> chcesz dostać, a nie jak to ugotować. Kucharz sam decyduje, w jakiej kolejności kroić i smażyć. W Pythonie jest odwrotnie: gdy piszesz pętlę po wierszach, sam jesteś kucharzem i podajesz przepis krok po kroku. Dlatego to samo zapytanie SQL może zostać wykonane na wiele sposobów, a Ty nie musisz o tym wiedzieć.</p>
+    </div>
+
+    <details class="box quiz">
+      <summary>W zabawce warunek sprawdzany jest dla każdego z 12 wierszy, nawet jeśli pasują tylko cztery. Czy tak musi być?</summary>
+      <p>Przy takim planie tak: baza nie wie z góry, które wiersze pasują, więc musi zajrzeć do każdego. Dla 12 wierszy to bez znaczenia, dla miliarda to katastrofa. Stąd biorą się sztuczki, o których jest następny rozdział: jeśli baza ma pod ręką posortowany spis, może pójść od razu do właściwych wierszy i pominąć resztę.</p>
+    </details>
+
+    <details class="box quiz">
+      <summary>Warunek brzmi: typ równa się „skok". Procesor umie tylko dodawać i porównywać liczby. Jak więc porównuje słowa?</summary>
+      <p>Słowo to dla niego ciąg liczb, po jednej na literę (pamiętasz „cztery litery" z rozdziału o bitach). Porównanie dwóch słów to porównanie pierwszej litery z pierwszą, drugiej z drugą i tak dalej, aż trafi się różnica albo słowa się skończą. Bazy często idą na skróty: zamiast słowa „skok" w każdym wierszu zapisują mały numer (na przykład 2), a obok trzymają jedną tabelkę „2 znaczy skok". Wtedy cały warunek to porównanie dwóch małych liczb.</p>
+    </details>
+
+    <div class="box key">
+      <span class="tag">Zapamiętaj</span>
+      <p>Tabela, kolumny i wiersze istnieją tylko na górze, dla Twojej wygody. Dla komputera zapytanie to pętla, w której miliony razy powtarza się jedna czynność: <b>weź liczbę z pamięci, porównaj z inną, zdecyduj, co dalej</b>. To te same trzy klocki co przy ziarnku piasku: weź, policz, zapisz.</p>
+    </div>
+
+    <div class="box scale">
+      <span class="tag">Skala</span>
+      <p>Jeden rdzeń procesora potrafi sprawdzić prosty warunek dla około miliarda wierszy na sekundę. Hurtownie danych, takie jak BigQuery, rozdzielają jedno zapytanie na setki lub tysiące maszyn pracujących naraz, dzięki czemu przejrzenie bilionów wierszy trwa sekundy, a nie godziny.</p>
+    </div>
+
+    <details class="box simpl">
+      <summary>Co tu uprościłem</summary>
+      <p>Prawdziwe plany bywają rozbudowane: łączenie tabel, sortowanie, grupowanie, a każdy z tych kroków da się wykonać kilkoma sposobami. Baza opiera wybór planu na statystykach o danych (ile jest wierszy, jak rozkładają się wartości), a gdy statystyki są nieaktualne, potrafi wybrać plan fatalny. Pominąłem też to, że wiele osób może pytać i zapisywać naraz, co wymaga osobnej, sporej maszynerii pilnującej, żeby nikt nie zobaczył danych „w połowie zmiany".</p>
+    </details>
+  </section>
+</main>
+<script type="module" src="../js/chapters/b0.js"></script>
+</body>
+</html>

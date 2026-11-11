@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pamięć jako adresy · Jak działa komputer</title>
+<script src="../js/theme.js"></script>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  #tree .edge { fill: none; stroke: var(--off); stroke-width: 3; stroke-linecap: round; }
+  #tree .edge.on { stroke: var(--on); stroke-width: 5; filter: drop-shadow(0 0 3px var(--on-glow)); }
+  #tree .node { fill: var(--panel2); stroke: var(--muted); stroke-width: 1.5; }
+  #tree .node.on { fill: var(--on); stroke: var(--on); }
+  #tree .box { fill: var(--panel2); stroke: var(--line); stroke-width: 1.5; cursor: pointer; }
+  #tree .box.on { fill: var(--accent-soft); stroke: var(--on); stroke-width: 3; }
+  #tree text { fill: var(--ink); font: 600 12px var(--mono); text-anchor: middle; pointer-events: none; }
+  #tree text.m { fill: var(--muted); font: 500 11px var(--font); }
+  #tree text.lr { fill: var(--accent); font-size: 13px; }
+</style>
+</head>
+<body data-chapter="t2">
+<main>
+  <p class="lead">Pamięć to miliardy skrytek. Polecenie „weź liczbę ze skrytki 12" brzmi niewinnie, ale jak sprzęt ma trafić akurat do dwunastej? Nikt przecież nie chodzi wzdłuż ściany i nie liczy.</p>
+
+  <div class="frames">
+    <div><b>Skąd przychodzimy</b><p>Z bitów: wiemy, że numer skrytki też jest zapisany zerami i jedynkami.</p></div>
+    <div><b>Co tu zobaczysz</b><p>Jak cztery bity adresu prowadzą prosto do jednej z szesnastu skrytek.</p></div>
+    <div><b>Dokąd schodzimy</b><p>Do procesora, który z tej pamięci korzysta.</p></div>
+  </div>
+
+  <div class="box analogy">
+    <span class="tag">Analogia</span>
+    <p>Wyobraź sobie drogę, która co kawałek się rozwidla. Na każdym rozwidleniu stoi zwrotnica: w lewo albo w prawo. Jeśli dostaniesz kartkę „prawo, prawo, lewo, lewo", dojedziesz do jednego, konkretnego domu, bez szukania i bez pytania o drogę. <span class="t" data-t="adres">Adres</span> skrytki jest właśnie taką kartką: każdy bit ustawia jedną zwrotnicę.</p>
+  </div>
+
+  <div class="widget">
+    <p class="wt">Cztery bity adresu, szesnaście skrytek</p>
+    <div class="controls" style="margin:0 0 6px">
+      <span class="hint" style="margin:0">Adres (klikaj bity):</span>
+      <span class="bits" id="addr"></span>
+      <span class="hint" style="margin:0" id="addrSay"></span>
+    </div>
+    <div class="hs"><svg id="tree" viewBox="0 0 760 330" style="width:100%;height:auto;display:block;--minw:650px"></svg></div>
+    <div class="say" id="say"></div>
+    <div class="controls">
+      <span class="hint" style="margin:0">Zmień zawartość wskazanej skrytki:</span>
+      <button class="btn" id="dec">− 1</button>
+      <button class="btn" id="inc">+ 1</button>
+      <button class="btn" id="reset">Przywróć</button>
+    </div>
+    <p class="hint">Bit 0 znaczy „w lewo", bit 1 znaczy „w prawo". Możesz też kliknąć skrytkę, a adres ustawi się sam.</p>
+  </div>
+
+  <section>
+    <h2>Dlaczego to takie ważne</h2>
+    <p>Zauważ, że do każdej skrytki prowadzą dokładnie cztery rozwidlenia. Do skrytki 0 jest tak samo daleko jak do skrytki 15. Sprzęt <b>nie przeszukuje</b> pamięci. Bity adresu to po prostu przewody z napięciem, które jednocześnie ustawiają wszystkie zwrotnice, a sygnał od razu trafia tam, gdzie trzeba. Dlatego odczyt dowolnej skrytki trwa tyle samo. Stąd zresztą nazwa RAM: po angielsku to skrót od „pamięć o dostępie swobodnym", czyli takim, w którym można sięgnąć od razu w dowolne miejsce.</p>
+    <p>W skrytkach powyżej leży prawdziwa zawartość: to program z poprzedniego rozdziału (skrytki od 0 do 6) i liczby dwóch ziaren (skrytki od 12 do 15). Za chwilę uruchomisz go na procesorze.</p>
+
+    <details class="box quiz">
+      <summary>Cztery bity adresu wystarczają na 16 skrytek. Ile bitów trzeba na 32 skrytki? A na tysiąc?</summary>
+      <p>Każdy dodatkowy bit to jedno rozwidlenie więcej, czyli <b>dwa razy więcej</b> skrytek. Pięć bitów daje 32. Dziesięć bitów daje 1024, więc na tysiąc wystarczy dziesięć. Ta sama prawidłowość działa dalej: 20 bitów to około miliona skrytek, 30 bitów to około miliarda.</p>
+    </details>
+
+    <h2>Co mieści jedna skrytka</h2>
+    <p>Prawdziwa skrytka pamięci mieści jeden <span class="t" data-t="bajt">bajt</span>, czyli osiem bitów. To mało, więc większe rzeczy zajmują kilka sąsiednich skrytek. Liczba z przecinkiem opisująca wysokość ziarnka zajmuje cztery skrytki z rzędu, a program pamięta tylko adres pierwszej z nich i wie, że ma przeczytać cztery naraz.</p>
+
+    <details class="box quiz">
+      <summary>W skrytce 12 leży 00001010. Skąd wiadomo, że to „pozycja ziarnka 1", a nie polecenie albo litera?</summary>
+      <p>Z samej skrytki nie wiadomo. Te bity jako liczba dają 10. Jako polecenie znaczyłyby „nic nie rób" (bo zaczynają się od 0000). Jako litera byłyby znakiem nowej linii. O znaczeniu decyduje program: ponieważ jego polecenia biorą tę skrytkę, dodają do niej prędkość i rysują ziarnko w miejscu, które z tego wynika, jest to pozycja ziarnka.</p>
+    </details>
+
+    <div class="box scale">
+      <span class="tag">Skala</span>
+      <p>Komputer z 16 GB pamięci ma około 17 miliardów skrytek. Żeby wskazać jedną z nich, potrzeba 34 bitów adresu, czyli 34 rozwidleń po drodze. Dzisiejsze procesory nazywa się 64-bitowymi między innymi dlatego, że ich adresy mają do 64 bitów. To zapas ogromny: wystarczyłby na pamięć miliardy razy większą niż jakakolwiek dziś produkowana.</p>
+    </div>
+
+    <details class="box simpl">
+      <summary>Co tu uprościłem</summary>
+      <p>Prawdziwe kości pamięci nie mają jednego wielkiego drzewa, tylko układ w kratkę: połowa bitów adresu wybiera wiersz, druga połowa kolumnę, co wymaga znacznie mniej przełączników. Poza tym procesor ma po drodze kilka poziomów małej, bardzo szybkiej pamięci podręcznej, w której trzyma kopie ostatnio używanych skrytek, bo sięganie do głównej pamięci jest dla niego stosunkowo powolne. Jak fizycznie wygląda skrytka, która „pamięta" bit, zobaczysz w rozdziale „Jak pamięć pamięta".</p>
+    </details>
+  </section>
+</main>
+<script type="module" src="../js/chapters/t2.js"></script>
+</body>
+</html>

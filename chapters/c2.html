@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wielkie mnożenie · Jak działa komputer</title>
+<script src="../js/theme.js"></script>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  .neuron { display: grid; grid-template-columns: auto auto 1fr auto; gap: 8px 14px; align-items: center; font-size: .95rem; max-width: 640px; }
+  .neuron .h { font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+  .neuron input { width: 100%; }
+  .chip { display: inline-block; min-width: 54px; text-align: center; font: 600 .95rem var(--mono); background: var(--panel2); border-radius: 7px; padding: 4px 8px; }
+  .chip.hot { background: var(--on); color: #1a1206; }
+  .chip.out { background: var(--accent-soft); border: 1px solid var(--accent); }
+  .layer { display: grid; grid-template-columns: auto auto auto; gap: 26px; align-items: center; justify-content: start; }
+  .layer table { border-collapse: separate; border-spacing: 5px; }
+  .layer th { font-size: .68rem; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); font-weight: 700; padding-bottom: 2px; }
+  .sent { display: flex; flex-wrap: wrap; gap: 6px; font-size: 1.15rem; }
+  .sent span { border-radius: 8px; padding: 6px 10px 4px; text-align: center; cursor: pointer; border: 2px solid transparent; background: color-mix(in srgb, var(--on) calc(var(--w) * 100%), var(--panel2)); }
+  .sent span.sel { border-color: var(--electron); }
+  .sent span.later { opacity: .35; cursor: pointer; }
+  .sent small { display: block; font: 500 .7rem var(--mono); color: var(--muted); min-height: 1.2em; }
+  .soft { display: grid; grid-template-columns: 90px 150px 1fr 50px; gap: 6px 12px; align-items: center; font-size: .95rem; max-width: 680px; }
+  .soft .bar { height: 18px; border-radius: 5px; background: var(--on); min-width: 2px; transition: width .15s; }
+  @media (max-width: 720px) { .layer { grid-template-columns: 1fr; } .soft { grid-template-columns: 80px 1fr 44px; } .soft input { grid-column: 1 / -1; } }
+</style>
+</head>
+<body data-chapter="c2">
+<main>
+  <p class="lead">Mamy tabelę liczb opisującą tekst. Na końcu ma z niej wyjść lista szans na następny kawałek. Pomiędzy jest „sieć neuronowa", co brzmi tajemniczo. Tymczasem w środku są wyłącznie dwie czynności: mnożenie i dodawanie. Tylko jest ich niewyobrażalnie dużo.</p>
+
+  <div class="frames">
+    <div><b>Skąd przychodzimy</b><p>Z tokenów zamienionych na listy liczb.</p></div>
+    <div><b>Co tu zobaczysz</b><p>Jeden „neuron", jedną warstwę, mechanizm uwagi i zamianę wyników na szanse.</p></div>
+    <div><b>Dokąd schodzimy</b><p>Do sprzętu, który musi te mnożenia wykonać.</p></div>
+  </div>
+
+  <section>
+    <h2>Jeden neuron: głosowanie z wagami</h2>
+    <div class="box analogy">
+      <span class="tag">Analogia</span>
+      <p>Wyobraź sobie komisję, która ocenia kandydata. Każdy członek wystawia ocenę, ale ich głosy nie są równe: głos przewodniczącego liczy się podwójnie, głos stażysty w połowie, a jeden członek jest tak przekorny, że jego zachwyt liczy się na minus. Wynik to suma ocen, każda pomnożona przez wagę głosu. „Neuron" w modelu to dokładnie taka komisja: bierze kilka liczb, każdą mnoży przez jej <span class="t" data-t="waga">wagę</span> i wszystko sumuje.</p>
+    </div>
+
+    <div class="widget">
+      <p class="wt">Jeden neuron: trzy liczby na wejściu, trzy wagi. Ruszaj suwakami wag</p>
+      <div class="neuron" id="neuron"></div>
+      <div class="say" id="nSay"></div>
+    </div>
+
+    <p>Na końcu jest jeszcze jeden drobny krok: jeśli suma wyszła poniżej zera, neuron oddaje zero. Ten próg wygląda niewinnie, ale bez niego cała sieć, choćby miała sto warstw, umiałaby tylko tyle co jedna.</p>
+
+    <h2>Warstwa: wiele neuronów naraz</h2>
+    <p>Jeden neuron to za mało. Dlatego ustawia się ich obok siebie tysiące, każdy z własnym zestawem wag, i wszystkim daje te same liczby na wejściu. To jest <b>warstwa</b>. Wagi całej warstwy wygodnie zapisać w tabeli: jeden wiersz na neuron, jedna kolumna na każdą liczbę wejściową. Policzenie warstwy to przejście przez tę tabelę kratka po kratce.</p>
+
+    <div class="widget">
+      <p class="wt">Warstwa z czterech neuronów. Klikaj „Jedno mnożenie" i patrz, która kratka pracuje</p>
+      <div class="layer">
+        <table id="lin"></table>
+        <table id="lw"></table>
+        <table id="lout"></table>
+      </div>
+      <div class="controls">
+        <button class="btn primary" id="lstep">Jedno mnożenie</button>
+        <button class="btn" id="lall">Policz całą warstwę</button>
+        <button class="btn" id="lreset">Od nowa</button>
+        <span class="hint" style="margin:0">Wykonanych mnożeń: <span class="num" id="lcount">0</span> z 12</span>
+      </div>
+      <div class="say" id="lSay"></div>
+    </div>
+
+    <p>Wyjście jednej warstwy staje się wejściem następnej. Model to kilkadziesiąt takich warstw jedna za drugą. Lista liczb opisująca token wchodzi z jednej strony, po drodze jest wielokrotnie mnożona, sumowana i przycinana, a z drugiej strony wychodzi lista, z której da się odczytać, jaki kawałek tekstu powinien być następny.</p>
+
+    <h2>Uwaga: słowa zaglądają do siebie nawzajem</h2>
+    <p>Jest jeszcze jeden składnik, bez którego to by nie działało. Gdyby każdy token był przeliczany osobno, model nie wiedziałby, że w zdaniu „Kot nie wszedł do kuchni, bo był zmęczony" zmęczony był kot, a nie kuchnia. Dlatego w każdej warstwie tokeny <b>zaglądają do wcześniejszych tokenów</b> i dobierają z nich to, co dla nich ważne. Ten mechanizm nazywa się uwagą.</p>
+
+    <div class="widget">
+      <p class="wt">Kliknij słowo, żeby zobaczyć, na które wcześniejsze słowa „patrzy"</p>
+      <div class="sent" id="sent"></div>
+      <div class="say" id="aSay"></div>
+    </div>
+
+    <p>Jak model wylicza, kto na kogo patrzy? Znowu mnożeniem. Dla każdej pary tokenów mnoży ich listy liczb liczba po liczbie i sumuje. Jeśli listy „pasują do siebie", suma wychodzi duża i token bierze od tamtego dużo. Potem miesza listy wcześniejszych tokenów w takich proporcjach, jakie wyszły. Nie ma tu żadnej gramatyki ani reguł wpisanych ręcznie. Są wagi, które podczas uczenia ułożyły się tak, żeby „był" znajdowało swojego „kota".</p>
+
+    <h2>Na końcu: z wyników na szanse</h2>
+    <p>Ostatnia warstwa daje po jednej liczbie na każdy token ze słownika. To jeszcze nie szanse: te liczby mogą być dowolne, także ujemne. Zamienia się je na procenty tak, żeby razem dawały sto i żeby większy wynik oznaczał większą szansę. Przy okazji duże wyniki zostają mocno wyróżnione, a małe prawie znikają.</p>
+
+    <div class="widget">
+      <p class="wt">„Kot śpi na …": cztery słowa-kandydaci i ich wyniki z ostatniej warstwy</p>
+      <div class="soft" id="soft"></div>
+      <div class="say" id="sSay"></div>
+    </div>
+
+    <details class="box quiz">
+      <summary>Skąd się biorą wagi? Kto ustawił te miliardy suwaków?</summary>
+      <p>Nikt ich nie ustawiał ręcznie. Na początku są losowe i model bredzi. Potem pokazuje mu się prawdziwy tekst z zakrytym następnym kawałkiem, model podaje swoje szanse, a program sprawdza, jak bardzo się pomylił. Następnie dla każdej wagi wylicza, w którą stronę trzeba ją odrobinę przesunąć, żeby pomyłka była mniejsza, i przesuwa wszystkie naraz. Powtórzone biliony razy, na tekstach z dużej części internetu, to wystarcza, żeby wagi ułożyły się w coś, co pisze sensowne zdania. To jest całe „uczenie". Trwa tygodniami na tysiącach kart graficznych.</p>
+    </details>
+
+    <details class="box quiz">
+      <summary>Czy gdzieś w tych wagach da się znaleźć zapisane zdanie „Warszawa jest stolicą Polski"?</summary>
+      <p>Nie w taki sposób, jak w bazie danych. Nie ma skrytki z tym zdaniem. Jest wiele wag, które razem sprawiają, że po słowach „stolicą Polski jest" największą szansę dostaje „Warszawa". Wiedza jest rozsmarowana po milionach liczb, z których żadna z osobna nic nie znaczy. Dlatego modelu nie da się poprawić przez „zmianę jednego wpisu" i dlatego sam model nie umie powiedzieć, skąd coś wie.</p>
+    </details>
+
+    <div class="box key">
+      <span class="tag">Zapamiętaj</span>
+      <p>Wszystko, co dzieje się w modelu językowym, sprowadza się do jednej czynności powtarzanej bez końca: <b>pomnóż dwie liczby i dodaj wynik do sumy</b>. Nie ma w środku żadnych reguł języka, żadnej bazy faktów, żadnego „jeśli pytanie dotyczy kotów, to…". Jest tabela liczb mnożona przez tabelę liczb.</p>
+    </div>
+
+    <div class="box scale">
+      <span class="tag">Skala</span>
+      <p>W zabawce warstwa ma 12 wag. W prawdziwym modelu jedna warstwa ma ich setki milionów, warstw jest kilkadziesiąt, a razem wag jest od kilku do kilkuset miliardów. Żeby wyliczyć szanse na <b>jeden</b> następny token, trzeba każdej z nich użyć przynajmniej raz. Jedno słowo odpowiedzi kosztuje więc setki miliardów mnożeń.</p>
+    </div>
+
+    <details class="box simpl">
+      <summary>Co tu uprościłem</summary>
+      <p>Pominąłem sporo szczegółów budowy: w każdej warstwie mechanizm uwagi działa w kilkudziesięciu równoległych kopiach, z których każda wypatruje czegoś innego, a między krokami są dodatkowe poprawki pilnujące, żeby liczby nie rosły bez opamiętania. Wzór uwagi w zabawce ułożyłem ręcznie, żeby był czytelny; prawdziwe wzory bywają dużo mniej oczywiste. Zamiana wyników na szanse ma swoją dokładną regułę, którą tu tylko opisałem słowami. Sedno pozostaje jednak takie, jak napisałem: mnożenie, dodawanie i próg.</p>
+    </details>
+  </section>
+</main>
+<script type="module" src="../js/chapters/c2.js"></script>
+</body>
+</html>

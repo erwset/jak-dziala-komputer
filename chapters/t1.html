@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bity i znaczenie · Jak działa komputer</title>
+<script src="../js/theme.js"></script>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  .lamps { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; max-width: 520px; text-align: center; }
+  .lamps .bit { width: 100%; height: 48px; font-size: 1.2rem; }
+  .lamps small { color: var(--muted); font-size: .78rem; }
+  .reads { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 14px; }
+  .reads > div { background: var(--panel2); border-radius: 10px; padding: 10px 14px; min-width: 0; }
+  .reads b { display: block; font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .reads .v { font: 600 1.3rem var(--mono); overflow-wrap: anywhere; }
+  .reads .how { font-size: .82rem; color: var(--muted); margin-top: 2px; }
+  .sw { display: inline-block; width: 44px; height: 30px; border-radius: 7px; vertical-align: middle; border: 1px solid var(--line); margin-right: 8px; }
+  .bit.fs { box-shadow: inset 0 -4px 0 var(--hole); } .bit.fe { box-shadow: inset 0 -4px 0 var(--good); } .bit.fm { box-shadow: inset 0 -4px 0 var(--electron); }
+  .fl { display: grid; gap: 6px; margin-top: 12px; font-size: .92rem; }
+  .fl span i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  @media (max-width: 700px) { .reads { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body data-chapter="t1">
+<main>
+  <p class="lead">Na dnie poprzedniego rozdziału zostały same zera i jedynki. Zanim zejdziemy do procesora, trzeba zrozumieć, jak z czegoś tak ubogiego da się zrobić liczbę, ułamek, kolor albo literę.</p>
+
+  <div class="frames">
+    <div><b>Skąd przychodzimy</b><p>Z kodu maszynowego, czyli grup bitów leżących w skrytkach pamięci.</p></div>
+    <div><b>Co tu zobaczysz</b><p>Że te same bity znaczą różne rzeczy zależnie od tego, jak się je odczyta.</p></div>
+    <div><b>Dokąd schodzimy</b><p>Do pamięci: jak komputer trafia do właściwej skrytki.</p></div>
+  </div>
+
+  <section>
+    <h2>Bit to jedna lampka</h2>
+    <p><span class="t" data-t="bit">Bit</span> to najprostsza rzecz, jaką da się zapamiętać: jedno „tak" albo „nie". Wyobraź sobie lampkę, która świeci albo nie. W sprzęcie będzie to przewód, na którym jest <span class="t" data-t="napiecie">napięcie</span> albo go nie ma, ale do tego dojdziemy.</p>
+    <p>Jedna lampka to mało. Ale ustaw kilka w rzędzie i umów się, że <b>każda jest warta dwa razy więcej niż sąsiadka z prawej</b>. Zwykłe liczby działają podobnie: w liczbie 352 cyfra 3 jest warta sto, 5 dziesięć, a 2 jeden, czyli każde miejsce jest warte dziesięć razy więcej niż sąsiednie. Tutaj mamy tylko dwie „cyfry" (świeci, nie świeci), więc miejsca rosną dwukrotnie zamiast dziesięciokrotnie.</p>
+
+    <div class="widget">
+      <p class="wt">Osiem lampek: klikaj, żeby zapalać i gasić</p>
+      <div class="lamps" id="lamps"></div>
+      <div class="say" id="lampSay"></div>
+      <div class="controls">
+        <button class="btn primary" id="inc">Dolicz jeden</button>
+        <button class="btn" id="zero">Zgaś wszystkie</button>
+        <button class="btn" id="all">Zapal wszystkie</button>
+      </div>
+    </div>
+
+    <p>Osiem bitów razem to <span class="t" data-t="bajt">bajt</span>. Daje 256 różnych układów lampek, czyli liczby od 0 do 255. Klikaj „Dolicz jeden" i patrz na wzór: prawa lampka miga co krok, następna co dwa kroki, kolejna co cztery. Tak samo kręcą się bębenki licznika w starym samochodzie, tylko tam każdy ma dziesięć pozycji, a tu dwie.</p>
+
+    <details class="box quiz">
+      <summary>Zapalone są wszystkie lampki, czyli 255. Co się stanie po „Dolicz jeden"?</summary>
+      <p>Wszystkie zgasną i zostanie 0. Dziewiątej lampki nie ma, więc nadmiar po prostu przepada, jak licznik w aucie, który po 999 999 wraca do zera. To się nazywa <b>przepełnienie</b> i bywa źródłem prawdziwych kłopotów. W 2014 roku licznik wyświetleń na YouTube trzeba było przebudować, bo jeden teledysk zbliżył się do największej liczby, jaką mieściły 32 bity (nieco ponad dwa miliardy). A w 1996 roku rakieta Ariane 5 rozpadła się kilkadziesiąt sekund po starcie, bo pewna liczba okazała się za duża na przewidziane dla niej 16 bitów.</p>
+    </details>
+
+    <h2>Te same bity, cztery znaczenia</h2>
+    <p>Poniżej są 32 bity, czyli cztery bajty. To tyle, ile zajmuje jedna liczba z sześciu opisujących ziarnko piasku. Pod spodem widzisz <b>cztery różne odczytania tych samych lampek</b>. Żadne nie jest „prawdziwsze" od pozostałych.</p>
+
+    <div class="widget">
+      <p class="wt">32 bity i cztery sposoby czytania</p>
+      <div class="bits" id="bits32"></div>
+      <div class="controls">
+        <button class="btn" data-preset="h">Wysokość ziarnka: 1,5</button>
+        <button class="btn" data-preset="c">Kolor piasku</button>
+        <button class="btn" data-preset="t">Słowo „PIAS"</button>
+        <button class="btn" data-preset="n">Liczba 2000</button>
+        <button class="btn" data-preset="d">Ułamek 0,1</button>
+        <button class="btn" data-preset="r">Losowe</button>
+      </div>
+      <div class="reads">
+        <div><b>Jako liczba całkowita</b><div class="v" id="rInt"></div><div class="how">Wszystkie 32 lampki jako jeden długi rząd, każda warta dwa razy więcej niż sąsiadka.</div></div>
+        <div><b>Jako liczba z przecinkiem</b><div class="v" id="rFloat"></div><div class="how">Bity podzielone na trzy pola: znak, skala, cyfry (wyjaśnienie niżej).</div></div>
+        <div><b>Jako kolor</b><div class="v"><span class="sw" id="rSw"></span><span id="rCol" style="font-size:.9rem"></span></div><div class="how">Każdy bajt osobno: ile czerwonego, zielonego, niebieskiego i jak mocno kryje.</div></div>
+        <div><b>Jako cztery litery</b><div class="v" id="rTxt"></div><div class="how">Każdy bajt to numer znaku w umownej tabeli: 65 to A, 66 to B i tak dalej. Kropka oznacza numer bez przypisanej litery.</div></div>
+      </div>
+    </div>
+
+    <div class="box key">
+      <span class="tag">Zapamiętaj</span>
+      <p>Bity same nic nie znaczą. Znaczenie nadaje im dopiero <b>program, który je czyta</b>: jeśli potraktuje je jak wysokość, staną się wysokością; jeśli wyśle je do ekranu jako kolor, staną się kolorem. To odpowiedź na pytanie „skąd komputer wie, że to jest ziarnko". Nie wie. Wie to program, bo tak go napisano.</p>
+    </div>
+
+    <h2>Jak zapisać ułamek</h2>
+    <p>Wysokość ziarnka to nie zawsze cała liczba. Jak zapisać 1,5 samymi lampkami? Sztuczka jest taka sama, jakiej używasz na co dzień, mówiąc „półtora miliona": podajesz kilka cyfr i osobno informację, jak duża jest liczba. <span class="t" data-t="float">Liczba z przecinkiem</span> dzieli swoje 32 bity na trzy pola (w zabawce powyżej są podkreślone kolorami):</p>
+    <div class="fl" id="floatHow"></div>
+    <p>Kliknij „Wysokość ziarnka: 1,5", a potem zapalaj i gaś pojedyncze bity w każdym polu i patrz, co dzieje się z liczbą. Zmiana bitu znaku odwraca ją na ujemną. Zmiana bitu skali podwaja ją lub przepoławia (albo robi coś znacznie gwałtowniejszego). Zmiana bitu cyfr z prawej strony ledwo ją rusza.</p>
+
+    <details class="box quiz">
+      <summary>Kliknij „Ułamek 0,1" i przyjrzyj się wartości. Co jest nie tak i czy widziałeś to już w Pythonie?</summary>
+      <p>Wychodzi 0,100000001…, a nie równe 0,1. Tak jak jednej trzeciej nie da się zapisać skończoną liczbą cyfr po przecinku (0,3333…), tak jednej dziesiątej nie da się zapisać skończoną liczbą bitów. Komputer zapisuje więc najbliższą liczbę, jaką potrafi. Stąd słynne zaskoczenie: w Pythonie i R dodanie 0.1 i 0.2 daje 0.30000000000000004. To nie błąd języka, tylko skutek zapisu ułamków w bitach. Dlatego nie należy sprawdzać, czy dwa ułamki są dokładnie równe, tylko czy są wystarczająco blisko.</p>
+    </details>
+
+    <div class="box scale">
+      <span class="tag">Skala</span>
+      <p>Komputer z 16 GB pamięci ma około 137 miliardów bitów. Każdy z nich to osobny, fizyczny, mikroskopijny element, który w danej chwili trzyma 0 albo 1. Zdjęcie z telefonu to kilkadziesiąt milionów bitów; ta strona razem z kodem to kilka milionów.</p>
+    </div>
+
+    <details class="box simpl">
+      <summary>Co tu uprościłem</summary>
+      <p>Liczby ujemne całkowite zapisuje się sprytną sztuczką (najstarszy bit jest wart „minus dużo"), którą widać, gdy zapalisz pierwszą lampkę z lewej. Litery to dziś bardziej złożona sprawa niż jedna tabelka: polskie znaki, takie jak „ą", zajmują dwa bajty, a emoji cztery. Python i R na co dzień używają ułamków 64-bitowych, które działają identycznie, tylko mają więcej bitów na cyfry i skalę, więc są dokładniejsze.</p>
+    </details>
+  </section>
+</main>
+<script type="module" src="../js/chapters/t1.js"></script>
+</body>
+</html>

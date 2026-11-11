@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jak działa komputer · od ekranu do elektronów</title>
+<script src="js/theme.js"></script>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main>
+  <div class="hero">
+    <div class="kicker">Interaktywna podróż w głąb komputera</div>
+    <h1>Jak działa komputer</h1>
+    <p class="lead">Widzisz piasek sypiący się w Blenderze. Pod spodem są tylko zera, jedynki i prąd płynący przez krzem. Ta strona prowadzi krok po kroku z jednego świata do drugiego, bez wzorów, za to z rzeczami, które można kliknąć.</p>
+  </div>
+
+  <div class="box key">
+    <span class="tag">Najważniejsza myśl całej podróży</span>
+    <p>Komputer <b>nie wie</b>, że gdzieś w nim jest ziarnko piasku. Ziarnko to kilka liczb leżących w pamięci. Te same nieliczne układy liczące obsługują po kolei wszystkie ziarnka, potem Twoją przeglądarkę, potem muzykę, i tak miliardy razy na sekundę. Znaczenie („to jest piasek") istnieje tylko w programie i w Twojej głowie.</p>
+  </div>
+
+  <h2>Trzy wejścia od góry</h2>
+  <p>Każde zaczyna się od czegoś, co znasz z ekranu, i schodzi w dół, aż wszystkie trzy spotkają się we wspólnym pniu: w procesorze.</p>
+  <div class="doors">
+    <a class="door" href="chapters/a0.html"><h3>Symulacja 3D / gra</h3><p>Ziarnko piasku: od ruchu na ekranie do dodawania dwóch liczb.</p><span class="badge" style="background:var(--accent);color:var(--accent-ink)">Zacznij tutaj</span></a>
+    <a class="door" href="chapters/b0.html"><h3>Baza danych</h3><p>Zapytanie SQL: od tabeli do porównywania dwóch liczb.</p><span class="badge">4 rozdziały</span></a>
+    <a class="door" href="chapters/c0.html"><h3>LLM</h3><p>Następne słowo: od tekstu do mnożenia dwóch liczb.</p><span class="badge">4 rozdziały</span></a>
+  </div>
+  <p>Najlepiej zacząć od symulacji 3D, bo tylko ta ścieżka prowadzi przez cały wspólny pień aż do atomów. Dwie pozostałe są krótsze: schodzą do procesora własną drogą i tam się z nią łączą.</p>
+
+  <h2>Główna droga: w dół i z powrotem</h2>
+  <p>Kolor paska po lewej pokazuje głębokość: od niebieskiego (ekran) do fioletowego (atomy).</p>
+  <div class="trunk" id="trunk"></div>
+
+  <h2>Ścieżka: baza danych</h2>
+  <p>Co się dzieje, gdy piszesz zapytanie SQL. Kończy się tam, gdzie zaczyna się rozdział „Procesor".</p>
+  <div class="trunk" id="trackB"></div>
+
+  <h2>Ścieżka: LLM</h2>
+  <p>Jak model językowy wybiera następne słowo. Kończy się tam, gdzie zaczyna się rozdział „Liczenie z bramek".</p>
+  <div class="trunk" id="trackC"></div>
+
+  <h2>Dodatek: komputery kwantowe</h2>
+  <p>Wszystko powyżej dotyczy zwykłych komputerów. Ten rozdział pokazuje, co w komputerze kwantowym jest naprawdę inne, a co jest tylko mitem.</p>
+  <div class="trunk" id="trackQ"></div>
+
+  <h2>Jak z tego korzystać</h2>
+  <ul>
+    <li><b>Czytaj po kolei.</b> Każdy rozdział to jedno „przybliżenie" i opiera się na poprzednim.</li>
+    <li><b>Klikaj.</b> W każdym rozdziale jest przynajmniej jedna zabawka. Zrozumienie przychodzi od grzebania, nie od czytania.</li>
+    <li><b>Zatrzymuj się na pytaniach.</b> Ramki „Pomyśl, zanim klikniesz" mają ukrytą odpowiedź. Spróbuj najpierw odpowiedzieć samodzielnie.</li>
+    <li><b>Słowa z kropkowanym podkreśleniem</b> mają wyjaśnienie: najedź na nie myszką. Wszystkie są też w <a href="slownik.html">słowniczku</a>.</li>
+  </ul>
+</main>
+<script type="module">
+  import { initPage } from './js/core/layout.js';
+  import { LAYERS, href, trackChapters } from './js/core/chapters.js';
+  import { el } from './js/core/util.js';
+  initPage();
+  for (const [boxId, track] of [['trunk', 'main'], ['trackB', 'b'], ['trackC', 'c'], ['trackQ', 'q']]) {
+    const box = document.getElementById(boxId);
+    trackChapters(track).forEach((c, i) => {
+      const a = el('a', { href: href(c.id) }, el('b', {}, String(i + 1).padStart(2, '0')), el('span', {}, c.title, el('small', {}, c.sub)));
+      a.style.setProperty('--c', c.layer == null ? '#8f4ccc' : c.layer < 0 ? '#7d8796' : LAYERS[c.layer].color);
+      box.append(a);
+    });
+  }
+</script>
+</body>
+</html>

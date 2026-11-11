@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Model pisze po kawałku · Jak działa komputer</title>
+<script src="../js/theme.js"></script>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  #text { font-size: 1.35rem; line-height: 1.5; min-height: 4.5em; padding: 12px 16px; background: var(--panel2); border-radius: 10px; }
+  #text .new { background: var(--on); color: #1a1206; border-radius: 5px; padding: 0 4px; }
+  #text .caret { display: inline-block; width: 2px; height: 1.1em; background: var(--accent); vertical-align: -3px; margin-left: 3px; animation: blink 1s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .cands { display: grid; grid-template-columns: 110px 1fr 54px; gap: 5px 10px; align-items: center; font-size: .95rem; margin-top: 12px; }
+  .cands .bar { height: 18px; border-radius: 5px; background: var(--off); min-width: 2px; transition: width .2s; }
+  .cands .pick .bar, .cands .bar.pick { background: var(--on); }
+  .cands b.pick { color: var(--accent); }
+</style>
+</head>
+<body data-chapter="c0">
+<main>
+  <p class="lead">Wpisujesz pytanie i model językowy odpowiada płynnym tekstem. Wygląda, jakby najpierw wymyślił odpowiedź, a potem ją napisał. Jest inaczej: model nie ma gotowej odpowiedzi. Za każdym razem wybiera <b>tylko jeden następny kawałek tekstu</b> i zaczyna od nowa.</p>
+
+  <div class="frames">
+    <div><b>Skąd przychodzimy</b><p>Z okna rozmowy, w którym odpowiedź pojawia się słowo po słowie.</p></div>
+    <div><b>Co tu zobaczysz</b><p>Malutki model językowy, który możesz przeklikać: szanse na każde następne słowo i losowanie.</p></div>
+    <div><b>Dokąd schodzimy</b><p>Do pytania, jak tekst w ogóle zamienić na liczby.</p></div>
+  </div>
+
+  <div class="widget">
+    <p class="wt">Zabawkowy model językowy. Zna tylko kilkadziesiąt zdań o kotach, psach i komputerach</p>
+    <div class="controls" style="margin:0 0 10px"><span class="hint" style="margin:0">Zacznij od słowa:</span><span id="starts" style="display:contents"></span></div>
+    <div id="text"></div>
+    <div class="cands" id="cands"></div>
+    <div class="controls">
+      <button class="btn primary" id="next">Następne słowo</button>
+      <button class="btn" id="sent">Dopisz do kropki</button>
+      <button class="btn" id="reset">Od nowa</button>
+      <label class="sl">Temperatura <input type="range" id="temp" min="2" max="20" value="10"> <span id="tempTxt"></span></label>
+    </div>
+    <div class="say" id="say"></div>
+  </div>
+
+  <section>
+    <h2>Jedna czynność powtarzana w kółko</h2>
+    <p>Model językowy to funkcja z jednym wejściem i jednym wyjściem. Na wejściu jest cały dotychczasowy tekst. Na wyjściu <b>lista szans</b>: dla każdego kawałka tekstu, jaki model zna, jedna liczba mówiąca, jak bardzo ten kawałek pasuje jako następny. To są paski, które widzisz w zabawce.</p>
+    <p>Potem dzieje się rzecz zaskakująco prosta:</p>
+    <ol>
+      <li>Z listy szans <b>losuje się</b> jeden kawałek. Te z większą szansą wypadają częściej, ale nie zawsze.</li>
+      <li>Wylosowany kawałek <b>dopisuje się</b> na koniec tekstu.</li>
+      <li>Cały tekst, już o jeden kawałek dłuższy, trafia na wejście jeszcze raz.</li>
+    </ol>
+    <p>I tak aż do końca odpowiedzi. Model nie planuje zdania. Nie wie, jak je skończy, kiedy je zaczyna. Każde słowo jest osobnym, pełnym przeliczeniem.</p>
+
+    <div class="box analogy">
+      <span class="tag">Analogia</span>
+      <p>Znasz podpowiedzi słów na klawiaturze telefonu? Stukasz „Dzień" i telefon proponuje „dobry". Gdybyś w kółko wybierał środkową podpowiedź, powstałoby zdanie, którego nikt nie zaplanował. Duży model językowy robi w zasadzie to samo. Różnica jest w jakości podpowiedzi: telefon patrzy na dwa ostatnie słowa, a duży model bierze pod uwagę całą rozmowę, tysiące słów wstecz, i ma za sobą przeczytanie ogromnej części internetu.</p>
+    </div>
+
+    <details class="box quiz">
+      <summary>Dlaczego ten sam model na to samo pytanie potrafi za każdym razem odpowiedzieć inaczej?</summary>
+      <p>Przez losowanie w kroku pierwszym. Szanse są za każdym razem identyczne, ale kostka pada inaczej, a jedno inne słowo na początku zmienia wszystko, co przyjdzie po nim. Ustaw w zabawce temperaturę na minimum: model zacznie zawsze brać najpewniejsze słowo i będzie się powtarzał. Ustaw na maksimum: słabe kandydatury dostaną prawie równe szanse i tekst zrobi się dziwaczny. <b>Temperatura</b> to po prostu pokrętło, które mówi, jak bardzo spłaszczyć różnice między szansami przed losowaniem.</p>
+    </details>
+
+    <details class="box quiz">
+      <summary>Dlaczego model czasem z pełnym przekonaniem pisze rzeczy nieprawdziwe?</summary>
+      <p>Bo nigdzie w tej pętli nie ma kroku „sprawdź, czy to prawda". Jest tylko „co najlepiej pasuje jako ciąg dalszy". Jeśli prawdziwa odpowiedź występowała w tekstach, na których model się uczył, zwykle pasuje najlepiej i model ją podaje. Jeśli nie, model i tak coś dopisze, bo zawsze jakieś słowo ma największą szansę, i będzie to brzmiało równie płynnie. Nasz zabawkowy model też potrafi napisać „kot nie wie, co to procesor", choć takiego zdania nigdy nie widział: skleił je z kawałków, które do siebie pasowały.</p>
+    </details>
+
+    <div class="box key">
+      <span class="tag">Zapamiętaj</span>
+      <p>Tak jak ziarnko piasku było sześcioma liczbami, tak odpowiedź modelu jest <b>ciągiem losowań z list szans</b>. Sens, styl i „osobowość" istnieją na górze, w tekście, który czytasz. Pod spodem jest jedna czynność: policz szanse na następny kawałek. Cała reszta tej ścieżki dotyczy tego, jak komputer te szanse liczy.</p>
+    </div>
+
+    <div class="box scale">
+      <span class="tag">Skala</span>
+      <p>Zabawkowy model zna kilkadziesiąt słów i wybiera spośród kilku kandydatów. Duży model zna około stu tysięcy kawałków tekstu i przy <b>każdym</b> kroku wylicza szansę dla każdego z nich. Odpowiedź na pół strony to kilkaset takich kroków, a każdy krok to setki miliardów działań na liczbach.</p>
+    </div>
+
+    <details class="box simpl">
+      <summary>Co tu uprościłem</summary>
+      <p>To najważniejsze uproszczenie całej ścieżki: zabawkowy model nie ma w środku żadnej sieci neuronowej. Szanse bierze z prostej tabelki „po tych dwóch słowach najczęściej szło to", zbudowanej z kilkudziesięciu zdań. Prawdziwy model liczy szanse zupełnie inaczej, wielkim łańcuchem mnożeń, o którym są następne rozdziały, i dzięki temu radzi sobie z tekstami, których nigdy nie widział. Ale <b>zewnętrzna pętla jest dokładnie ta sama</b>: szanse, losowanie, dopisanie, od nowa. Poza tym prawdziwe modele nie pracują na słowach, tylko na mniejszych kawałkach, o czym zaraz.</p>
+    </details>
+  </section>
+</main>
+<script type="module" src="../js/chapters/c0.js"></script>
+</body>
+</html>

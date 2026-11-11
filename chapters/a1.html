@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ziarnko jako dane · Jak działa komputer</title>
+<script src="../js/theme.js"></script>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  #cells { border-collapse: separate; border-spacing: 4px; width: 100%; font-size: .8rem; }
+  #cells th { font-weight: 600; color: var(--muted); font-size: .68rem; line-height: 1.2; padding: 2px; }
+  #cells td.cell { background: var(--panel2); border: 1.5px solid transparent; border-radius: 8px; padding: 3px 6px 5px; cursor: pointer; text-align: right; min-width: 58px; }
+  #cells td.cell small { display: block; text-align: left; color: var(--muted); font-size: .62rem; }
+  #cells tr.g td.cell { background: var(--accent-soft); }
+  #cells td.cell.sel { border-color: var(--electron); box-shadow: 0 0 0 2px var(--electron) inset; }
+  #cells td.name { white-space: nowrap; color: var(--muted); font-size: .75rem; }
+</style>
+</head>
+<body data-chapter="a1">
+<main>
+  <p class="lead">Rozbieramy ziarnko na części. Okazuje się, że całe ziarnko to sześć liczb leżących w ponumerowanych skrytkach. Zmień liczbę w skrytce, a ziarnko się przesunie.</p>
+
+  <div class="frames">
+    <div><b>Skąd przychodzimy</b><p>Z ekranu, na którym widać ruchomy piasek i tabelkę z sześcioma liczbami jednego ziarnka.</p></div>
+    <div><b>Co tu zobaczysz</b><p>Jak liczby wszystkich ziaren leżą w pamięci jedna za drugą i jak się do nich trafia.</p></div>
+    <div><b>Dokąd schodzimy</b><p>Do reguł, według których te liczby zmieniają się z klatki na klatkę.</p></div>
+  </div>
+
+  <div class="box analogy">
+    <span class="tag">Analogia</span>
+    <p><span class="t" data-t="ram">Pamięć komputera</span> jest jak bardzo długa ściana szafek-skrytek, takich jak na basenie. Każda skrytka ma swój numer i mieści dokładnie jedną liczbę. Nic więcej tam nie ma: żadnych etykiet, żadnych opisów. Numer skrytki nazywa się <span class="t" data-t="adres">adresem</span>.</p>
+  </div>
+
+  <div class="widget">
+    <p class="wt">Sześć ziaren i 36 skrytek pamięci</p>
+    <div class="row">
+      <div class="grow" style="flex-basis:300px">
+        <canvas class="c2d" id="view"></canvas>
+        <p class="hint">Widok z boku. Kliknij ziarnko, żeby je wybrać. Trzeciej liczby pozycji (przód–tył) z boku nie widać.</p>
+      </div>
+      <div class="grow" style="flex-basis:430px; overflow-x:auto">
+        <table id="cells"></table>
+        <p class="hint">Mała liczba w rogu to numer skrytki. Duża to wartość, która w niej leży. Kliknij skrytkę, żeby ją zaznaczyć.</p>
+      </div>
+    </div>
+    <div class="say" id="say"></div>
+    <div class="controls">
+      <span class="hint" style="margin:0">Zmień zaznaczoną skrytkę:</span>
+      <button class="btn" data-d="-0.5">− 0,5</button>
+      <button class="btn" data-d="-0.1">− 0,1</button>
+      <button class="btn" data-d="0.1">+ 0,1</button>
+      <button class="btn" data-d="0.5">+ 0,5</button>
+      <span style="flex:1"></span>
+      <button class="btn primary" id="play">Puść czas</button>
+      <button class="btn" id="toss">Podrzuć wszystkie</button>
+      <button class="btn" id="reset">Od nowa</button>
+    </div>
+  </div>
+
+  <section>
+    <h2>Jak trafić do właściwego ziarnka</h2>
+    <p>Każde ziarnko zajmuje sześć skrytek z rzędu. Ziarnko numer 0 dostaje skrytki od 0 do 5, ziarnko numer 1 skrytki od 6 do 11 i tak dalej. Żeby znaleźć dowolne ziarnko, wystarczy więc policzyć, ile skrytek zajmują te przed nim. Kliknij różne ziarnka i czytaj zdanie pod tabelką: liczy się samo.</p>
+    <p>To jest cały sekret „skąd komputer wie, które liczby należą do którego ziarnka". Nie wie tego w żaden głębszy sposób. Program po prostu trzyma się umowy: <i>pierwsza liczba z szóstki to pozycja lewo–prawo, druga to wysokość…</i> i konsekwentnie liczy numery skrytek.</p>
+
+    <details class="box quiz">
+      <summary>W której skrytce leży „prędkość w górę" ziarnka numer 5?</summary>
+      <p>Przed ziarnkiem numer 5 leży pięć ziaren po sześć skrytek, czyli 30 skrytek. Jego szóstka zaczyna się więc w skrytce 30. „Prędkość w górę" jest piąta z kolei (skrytki 30, 31, 32, 33, <b>34</b>). Sprawdź w tabelce.</p>
+    </details>
+
+    <h2>Skrytka nie wie, co w niej leży</h2>
+    <p>Zaznacz skrytkę 19 (wysokość ziarnka numer 3) i zmień ją przyciskami. Ziarnko skacze w górę i w dół. A teraz pomyśl: w skrytce leży po prostu liczba, na przykład 1,80. Czy to wysokość? Temperatura? Cena? <b>Sama skrytka tego nie wie.</b> To, że akurat ta liczba oznacza wysokość ziarnka numer 3, wynika wyłącznie z tego, co program z nią robi: bierze ją i rysuje kropkę na tej wysokości.</p>
+
+    <div class="box key">
+      <span class="tag">Zapamiętaj</span>
+      <p>Na tym poziomie nie ma już piasku. Jest 36 liczb w 36 skrytkach. Słowo „ziarnko" to tylko nasz wygodny skrót na „sześć sąsiednich skrytek".</p>
+    </div>
+
+    <details class="box quiz">
+      <summary>Co się stanie, jeśli program przez pomyłkę zapisze nową wysokość ziarnka numer 2 do skrytki 19 zamiast do 13?</summary>
+      <p>Podskoczy ziarnko numer 3, a nie 2. Komputer niczego nie zauważy, bo dla niego obie skrytki to po prostu skrytki. Mnóstwo prawdziwych błędów w programach (i dziwacznych „glitchy" w grach) to dokładnie taka pomyłka o kilka skrytek.</p>
+    </details>
+
+    <div class="box scale">
+      <span class="tag">Skala</span>
+      <p>Milion ziaren po sześć liczb to sześć milionów liczb. W prawdziwym komputerze jedna taka liczba zajmuje cztery najmniejsze skrytki (<span class="t" data-t="bajt">bajty</span>), więc razem około 24 milionów bajtów. Brzmi dużo, ale komputer z 16 GB pamięci ma takich skrytek około 17 miliardów. Cały piasek zajmuje w niej mniej niż jedną siedemsetną.</p>
+    </div>
+
+    <details class="box simpl">
+      <summary>Co tu uprościłem</summary>
+      <p>Przyjąłem, że jedna skrytka mieści jedną liczbę z przecinkiem. Naprawdę najmniejsza skrytka mieści tylko liczbę od 0 do 255, a liczba z przecinkiem zajmuje cztery takie skrytki naraz. Jak to działa, zobaczysz w rozdziale „Bity i znaczenie". Poza tym Blender pamięta o każdej cząstce więcej (na przykład rozmiar i obrót), a programy często układają dane inaczej: najpierw wszystkie pozycje, potem wszystkie prędkości. Zasada „liczby w ponumerowanych skrytkach" zostaje ta sama.</p>
+    </details>
+  </section>
+</main>
+<script type="module" src="../js/chapters/a1.js"></script>
+</body>
+</html>

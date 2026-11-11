@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gdzie to fizycznie leży · Jak działa komputer</title>
+<script src="../js/theme.js"></script>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  .fields { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+  .bytes { display: flex; gap: 3px; flex-wrap: wrap; }
+  .byte { width: 44px; text-align: center; border-radius: 7px; padding: 4px 0 3px; background: var(--panel2); border-bottom: 5px solid var(--c); font: 600 .9rem var(--mono); }
+  .byte small { display: block; font: 400 .6rem var(--font); color: var(--muted); }
+  .byte.dim { opacity: .3; }
+  .fbtn { border-bottom: 4px solid var(--c); }
+  .disk { display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; }
+  .pg { border-radius: 7px; padding: 6px 2px; text-align: center; font: 600 .78rem var(--mono); background: var(--panel2); border: 2px solid transparent; cursor: pointer; color: var(--muted); }
+  .pg.inram { border-color: var(--good); color: var(--ink); }
+  .pg.now { background: var(--on); color: #1a1206; }
+  .ram { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .slot { border-radius: 9px; border: 2px dashed var(--line); min-height: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center; font: 600 .9rem var(--mono); }
+  .slot.full { border-style: solid; border-color: var(--good); background: var(--panel2); }
+  .slot.now { background: var(--on); color: #1a1206; border-color: var(--on); }
+  .slot small { font: 400 .62rem var(--font); color: var(--muted); }
+  .slot.now small { color: #3a2408; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+  .stats > div { background: var(--panel2); border-radius: 10px; padding: 8px 12px; }
+  .stats b { display: block; font-size: .68rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .stats .v { font: 600 1.1rem var(--mono); }
+  @media (max-width: 700px) { .stats { grid-template-columns: 1fr; } .disk { grid-template-columns: repeat(6, 1fr); } }
+</style>
+</head>
+<body data-chapter="b2">
+<main>
+  <p class="lead">Do tej pory mówiliśmy „baza bierze wiersz". Ale skąd? Wiersz nie leży w żadnej tabelce. Leży jako kilkanaście bajtów na dysku, w paczce z setką innych, i żeby procesor mógł go sprawdzić, trzeba go najpierw stamtąd przynieść.</p>
+
+  <div class="frames">
+    <div><b>Skąd przychodzimy</b><p>Z szukania: wiemy, które wiersze trzeba przeczytać.</p></div>
+    <div><b>Co tu zobaczysz</b><p>Wiersz rozłożony na bajty oraz różnicę między sięganiem do pamięci a sięganiem na dysk.</p></div>
+    <div><b>Dokąd schodzimy</b><p>Do procesora, który dostaje te bajty i ma sprawdzić warunek.</p></div>
+  </div>
+
+  <section>
+    <h2>Wiersz to rządek bajtów</h2>
+    <p>Weźmy trzeci wiersz naszej tabeli: zdarzenie numer 3, gracz 7, typ „skok", pozycja 48, sekunda 9. Na dysku wygląda tak jak poniżej: siedemnaście <span class="t" data-t="bajt">bajtów</span> jeden za drugim, bez żadnych nazw kolumn. Kliknij nazwę pola, żeby zobaczyć, które bajty do niego należą.</p>
+
+    <div class="widget">
+      <p class="wt">Jeden wiersz tabeli „zdarzenia" tak, jak leży na dysku</p>
+      <div class="fields" id="fields"></div>
+      <div class="bytes" id="bytes"></div>
+      <div class="say" id="rowSay"></div>
+    </div>
+
+    <p>To ta sama zasada co przy ziarnku piasku: umowa o kolejności. Baza pamięta osobno, że w tej tabeli pierwsze cztery bajty każdego wiersza to numer zdarzenia, następne cztery to gracz i tak dalej. Dzięki temu, żeby sprawdzić warunek „gracz równa się 7", wie od razu, że ma wziąć bajty od piątego do ósmego.</p>
+
+    <h2>Strony, dysk i pamięć</h2>
+    <p>Wiersze nie leżą luzem. Są spakowane w <span class="t" data-t="strona">strony</span>: paczki po kilka tysięcy bajtów, czyli zwykle sto albo więcej wierszy w każdej. Baza nigdy nie czyta z dysku jednego wiersza. Czyta całą stronę, wkłada ją do pamięci RAM i dopiero tam szuka w niej wiersza.</p>
+
+    <div class="box analogy">
+      <span class="tag">Analogia</span>
+      <p>Pamięć RAM to blat biurka: wszystko jest pod ręką, ale mieści się niewiele. Dysk to archiwum w piwnicy: pomieści wszystko, ale po każdy segregator trzeba zejść. Gdy blat jest pełny, a potrzebujesz nowego segregatora, odnosisz ten, którego najdłużej nie ruszałeś. Dobra baza danych to w dużej mierze sztuka rzadkiego chodzenia do piwnicy.</p>
+    </div>
+
+    <div class="widget">
+      <p class="wt">Tabela z 24 stron na dysku i pamięć, w której mieszczą się cztery</p>
+      <div class="row">
+        <div class="grow" style="flex-basis:380px">
+          <h3 style="margin-top:0">Dysk: wszystkie strony tabeli</h3>
+          <div class="disk" id="disk"></div>
+          <p class="hint">Kliknij stronę, żeby baza ją przeczytała. Zielona ramka: kopia tej strony leży w pamięci.</p>
+        </div>
+        <div class="grow" style="flex-basis:260px">
+          <h3 style="margin-top:0">Pamięć RAM: cztery miejsca</h3>
+          <div class="ram" id="ram"></div>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="btn" id="seq">Przeczytaj całą tabelę po kolei</button>
+        <button class="btn" id="hot">Czytaj w kółko te same trzy strony</button>
+        <button class="btn" id="rnd">Dziesięć losowych stron</button>
+        <button class="btn" id="clear">Wyczyść</button>
+      </div>
+      <div class="stats">
+        <div><b>Z pamięci (szybko)</b><div class="v" id="hits">0</div></div>
+        <div><b>Z dysku (wolno)</b><div class="v" id="miss">0</div></div>
+        <div><b>Czas w ludzkiej skali</b><div class="v" id="human">0 sekund</div></div>
+      </div>
+      <div class="say" id="say"></div>
+    </div>
+
+    <p>Żeby poczuć różnicę, czasy są tu przeliczone na ludzką skalę. Jeśli sięgnięcie do pamięci RAM trwałoby <b>jedną sekundę</b>, to przyniesienie strony z szybkiego dysku SSD trwałoby około <b>siedemnastu minut</b>, a ze starego dysku talerzowego ponad <b>dobę</b>. Naprawdę chodzi o miliardowe i milionowe części sekundy, ale proporcja jest właśnie taka: tysiąc razy wolniej z dysku SSD, sto tysięcy razy wolniej z talerzowego.</p>
+
+    <details class="box quiz">
+      <summary>To samo zapytanie uruchomione drugi raz zaraz po pierwszym często działa wyraźnie szybciej. Dlaczego?</summary>
+      <p>Bo strony, których potrzebowało, leżą jeszcze w pamięci po pierwszym uruchomieniu. Za drugim razem baza nie schodzi do piwnicy ani razu. W zabawce: naciśnij „Czytaj w kółko te same trzy strony" i porównaj liczbę odczytów z dysku z liczbą odczytów z pamięci.</p>
+    </details>
+
+    <details class="box quiz">
+      <summary>Hurtownie danych, takie jak BigQuery, zapisują każdą kolumnę osobno zamiast całych wierszy. Co to daje przy zapytaniu, które potrzebuje dwóch kolumn z trzydziestu?</summary>
+      <p>W zapisie wierszami każda strona zawiera wszystkie trzydzieści kolumn, więc żeby przeczytać dwie, trzeba przynieść z dysku wszystko. W zapisie kolumnami strony z kolumną „gracz" zawierają same numery graczy, jeden za drugim. Baza przynosi tylko strony dwóch potrzebnych kolumn, czyli kilkanaście razy mniej danych. Dodatkowo kolumna pełna podobnych wartości świetnie się kompresuje. Cena: dopisanie jednego wiersza wymaga dotknięcia trzydziestu różnych miejsc, więc taki zapis jest dobry do analiz, a kiepski do częstych pojedynczych zmian.</p>
+    </details>
+
+    <div class="box key">
+      <span class="tag">Zapamiętaj</span>
+      <p>Dysk i pamięć z tego rozdziału to te same fizyczne rzeczy, które poznałeś w rozdziale „Jak pamięć pamięta": dysk SSD to miliardy pułapek na elektrony, RAM to miliardy maleńkich wiaderek z ładunkiem. „Przeczytać stronę z dysku" znaczy: sprawdzić stan kilkudziesięciu tysięcy pułapek i odwzorować go w wiaderkach.</p>
+    </div>
+
+    <div class="box scale">
+      <span class="tag">Skala</span>
+      <p>Typowa strona ma 8 tysięcy bajtów. Tabela z miliardem wierszy po sto bajtów to około 12 milionów stron. Serwer bazy danych z 256 GB pamięci utrzyma „na blacie" około 30 milionów stron, więc taka tabela mieści się w pamięci cała i dysk służy głównie do tego, żeby dane przetrwały wyłączenie prądu.</p>
+    </div>
+
+    <details class="box simpl">
+      <summary>Co tu uprościłem</summary>
+      <p>Prawdziwy wiersz ma dodatkowo krótki nagłówek, a pola o zmiennej długości (teksty) wymagają zapisania, gdzie się kończą. Baza nie zawsze wyrzuca z pamięci stronę najdawniej używaną: stosuje sprytniejsze reguły, które biorą pod uwagę także to, jak często strona była potrzebna. Poza tym procesor ma własną, jeszcze mniejszą i jeszcze szybszą pamięć podręczną, więc to samo zjawisko „blat kontra piwnica" powtarza się piętro niżej, między procesorem a pamięcią RAM.</p>
+    </details>
+  </section>
+</main>
+<script type="module" src="../js/chapters/b2.js"></script>
+</body>
+</html>

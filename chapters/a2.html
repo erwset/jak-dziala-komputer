@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Krok fizyki · Jak działa komputer</title>
+<script src="../js/theme.js"></script>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  .todo { list-style: none; padding: 0; margin: 0 0 10px; display: grid; gap: 4px; }
+  .todo li { padding: 6px 12px; border-radius: 8px; background: var(--panel2); font-size: .92rem; margin: 0; border-left: 4px solid transparent; color: var(--muted); }
+  .todo li.now { border-left-color: var(--accent); background: var(--accent-soft); color: var(--ink); font-weight: 650; }
+  .todo li.done { color: var(--ink); }
+  .todo li.done::after { content: "  ✓"; color: var(--good); }
+</style>
+</head>
+<body data-chapter="a2">
+<main>
+  <p class="lead">Wiemy już, że ziarnko to liczby w skrytkach. Teraz zobaczymy, co dokładnie komputer z nimi robi między jedną klatką a następną. To zaledwie kilka prostych czynności, powtarzanych w kółko.</p>
+
+  <div class="frames">
+    <div><b>Skąd przychodzimy</b><p>Z pamięci, w której leży sześć liczb każdego ziarnka.</p></div>
+    <div><b>Co tu zobaczysz</b><p>Jedną klatkę rozłożoną na cztery małe kroki, które możesz przeklikać.</p></div>
+    <div><b>Dokąd schodzimy</b><p>Do pytania, jak takie kroki zapisać, żeby komputer mógł je wykonać.</p></div>
+  </div>
+
+  <div class="box analogy">
+    <span class="tag">Analogia</span>
+    <p>Film z plasteliny powstaje tak: animator przesuwa figurkę o milimetr, robi zdjęcie, znów przesuwa, znów zdjęcie. Komputer jest takim animatorem, tylko nie ma własnego pomysłu na ruch. Dostał <b>sztywny przepis</b>, o ile przesunąć każde ziarnko przed kolejnym zdjęciem, i stosuje go bez końca.</p>
+  </div>
+
+  <div class="widget">
+    <p class="wt">Jedno ziarnko, klatka po klatce (widok z boku)</p>
+    <div class="row">
+      <div class="grow" style="flex-basis:280px; max-width:340px">
+        <canvas class="c2d" id="view"></canvas>
+        <p class="hint">Pełna kropka: to, co widać teraz na ekranie. Przerywany okrąg: gdzie ziarnko jest już w pamięci, ale jeszcze nie zostało narysowane. Blade kropki: poprzednie klatki.</p>
+      </div>
+      <div class="grow" style="flex-basis:380px">
+        <ol class="todo" id="todo">
+          <li>1. Przyspiesz: grawitacja dodaje trochę prędkości w dół</li>
+          <li>2. Przesuń: zmień wysokość o prędkość</li>
+          <li>3. Sprawdź podłogę: czy ziarnko nie wpadło pod nią</li>
+          <li>4. Narysuj: pokaż nową klatkę</li>
+        </ol>
+        <table class="vals">
+          <tr><th>Liczba ziarnka</th><th style="text-align:right">na początku klatki</th><th style="text-align:right">teraz w pamięci</th></tr>
+          <tr id="rv"><td>prędkość</td><td class="num" id="v0"></td><td class="num" id="v1"></td></tr>
+          <tr id="rh"><td>wysokość</td><td class="num" id="h0"></td><td class="num" id="h1"></td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="dock">
+      <div class="say" id="say"></div>
+      <div class="controls">
+        <button class="btn primary" id="next">Następny krok</button>
+        <button class="btn" id="frame">Dokończ klatkę</button>
+        <button class="btn" id="auto">Odtwarzaj</button>
+        <button class="btn" id="reset">Od nowa</button>
+        <span class="hint" style="margin:0">Klatka <span class="num" id="fno">1</span></span>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <h2>Cały przepis słowami</h2>
+    <p>Przed każdą klatką komputer robi z ziarnkiem trzy rzeczy, a potem rysuje:</p>
+    <ol>
+      <li><b>Przyspiesz.</b> Grawitacja ciągnie w dół bez przerwy, więc do prędkości w dół dodajemy za każdym razem tę samą małą porcję (tutaj 0,05).</li>
+      <li><b>Przesuń.</b> Ziarnko zmienia wysokość o tyle, ile aktualnie wynosi jego prędkość. Duża prędkość to duży skok, mała to mały.</li>
+      <li><b>Sprawdź podłogę.</b> Jeśli po przesunięciu ziarnko znalazło się pod podłogą, stawiamy je z powrotem na podłodze i odwracamy prędkość (leciało w dół, teraz leci w górę), zabierając jej część, bo odbicie zawsze trochę wytraca rozpęd.</li>
+      <li><b>Narysuj.</b> Dopiero teraz na ekranie pojawia się kropka w nowym miejscu.</li>
+    </ol>
+    <p>Zwróć uwagę na jedno: w krokach od 1 do 3 zmieniają się tylko liczby w pamięci. Na ekranie przez ten czas <b>nic się nie dzieje</b>. Obraz jest zawsze o krok spóźniony względem liczb.</p>
+
+    <h2>Skąd bierze się „prawdziwy" ruch</h2>
+    <p>Nikt nie nauczył komputera, jak wygląda spadanie. Nie ma w nim żadnego rysunku łuku ani toru lotu. Jest tylko reguła „dodaj trochę prędkości, przesuń o prędkość". Ale ponieważ prędkość rośnie z klatki na klatkę, każdy kolejny skok jest większy od poprzedniego. Spójrz na blade kropki: na górze są gęsto, na dole coraz rzadziej. Ziarnko <b>przyspiesza</b>, dokładnie tak jak prawdziwy przedmiot, choć nikt tego wprost nie zaprogramował.</p>
+
+    <details class="box quiz">
+      <summary>Co by się stało, gdyby komputer pomijał krok „Przyspiesz"?</summary>
+      <p>Prędkość nigdy by się nie zmieniała. Ziarnko, które zaczyna z prędkością zero, wisiałoby w powietrzu bez ruchu. Ziarnko pchnięte na początku leciałoby zawsze tak samo szybko, po prostej, bez końca. Cała „fizyka" siedzi w tym jednym dodawaniu.</p>
+    </details>
+
+    <details class="box quiz">
+      <summary>W którejś klatce ziarnko na chwilę ląduje pod podłogą i dopiero krok 3 je stamtąd wyciąga. Czy to może być kłopot?</summary>
+      <p>Tak. Jeśli coś leci bardzo szybko, a przeszkoda jest cienka, to w jednej klatce przedmiot jest przed przeszkodą, a w następnej już za nią, i sprawdzenie niczego nie wykryje. Stąd w grach pociski czasem „przelatują przez ścianę". Lekarstwo: liczyć mniejszymi kroczkami, kilka razy na jedną klatkę. W Blenderze nazywa się to podkrokami symulacji i dlatego dokładniejsza symulacja liczy się dłużej.</p>
+    </details>
+
+    <div class="box key">
+      <span class="tag">Zapamiętaj</span>
+      <p>Cała symulacja sprowadza się do trzech rodzajów czynności: <b>dodaj</b> dwie liczby, <b>porównaj</b> dwie liczby, <b>zapisz</b> wynik do skrytki. Wszystko, co zobaczysz niżej, aż do tranzystorów, służy wykonywaniu tych trzech rzeczy bardzo szybko.</p>
+    </div>
+
+    <div class="box scale">
+      <span class="tag">Skala</span>
+      <p>Jedno ziarnko w jednej klatce to tutaj kilka działań. W symulacji z milionem ziaren, gdzie każde sprawdza jeszcze kilkunastu sąsiadów, wychodzi kilkaset milionów działań na klatkę. Przy 24 klatkach na sekundę filmu to miliardy działań na każdą sekundę animacji.</p>
+    </div>
+
+    <details class="box simpl">
+      <summary>Co tu uprościłem</summary>
+      <p>Pokazuję tylko ruch w pionie; w trzech wymiarach te same kroki wykonuje się osobno dla każdego z trzech kierunków. Liczę „na klatkę", a prawdziwe programy uwzględniają jeszcze, ile czasu mija między klatkami, żeby ruch był taki sam przy 30 i przy 144 klatkach na sekundę. Pominąłem też zderzenia ziaren ze sobą, które są najdroższą częścią prawdziwej symulacji piasku.</p>
+    </details>
+  </section>
+</main>
+<script type="module" src="../js/chapters/a2.js"></script>
+</body>
+</html>

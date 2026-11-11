@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Od Pythona do zer i jedynek · Jak działa komputer</title>
+<script src="../js/theme.js"></script>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  .lvl { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 14px; padding: 12px 0; border-top: 1px solid var(--line); align-items: start; }
+  .lvl:first-of-type { border-top: 0; }
+  .lvl h3 { margin: 4px 0 0; font-size: .95rem; }
+  .lvl h3 small { display: block; font-weight: 400; color: var(--muted); font-size: .78rem; }
+  .lvl .human { font-size: 1.05rem; padding: 6px 0; }
+  .lvl .tr { font-size: .86rem; color: var(--muted); margin: 6px 0 0; }
+  .two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 4px 14px; align-items: center; }
+  .two .code { padding: 6px 12px; }
+  .two p { margin: 0; font-size: .86rem; color: var(--muted); }
+  .mc b { color: #ffbf7a; font-weight: 600; } .mc i { color: #8cc8ff; font-style: normal; }
+  .race { display: grid; gap: 14px; }
+  .lane b { display: block; font-size: .9rem; margin-bottom: 4px; }
+  .lane .track { display: flex; gap: 3px; flex-wrap: wrap; min-height: 22px; }
+  .lane .track i { width: 20px; height: 20px; border-radius: 5px; background: var(--panel2); display: block; }
+  .lane .track i.t { background: var(--off); } .lane .track i.x { background: var(--on); }
+  .legend { display: flex; gap: 16px; font-size: .82rem; color: var(--muted); margin-top: 8px; }
+  .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 5px; }
+  @media (max-width: 700px) { .lvl, .two { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body data-chapter="a3">
+<main>
+  <p class="lead">Mamy przepis: „do pozycji ziarnka dodaj jego prędkość". Procesor nie rozumie ani polskiego, ani Pythona. Rozumie tylko zera i jedynki. Zobacz, jak to samo jedno polecenie wygląda na pięciu poziomach, od zdania po bity.</p>
+
+  <div class="frames">
+    <div><b>Skąd przychodzimy</b><p>Z przepisu na jedną klatkę: przyspiesz, przesuń, sprawdź, narysuj.</p></div>
+    <div><b>Co tu zobaczysz</b><p>Krok „przesuń" zapisany coraz bliżej sprzętu i dwóch rodzajów tłumaczy, którzy robią ten przekład.</p></div>
+    <div><b>Dokąd schodzimy</b><p>Do samych bitów: co właściwie znaczą te zera i jedynki.</p></div>
+  </div>
+
+  <div class="box analogy">
+    <span class="tag">Analogia</span>
+    <p>„Upiecz ciasto" to polecenie dla człowieka. Dla kogoś, kto nigdy nie gotował, trzeba je rozpisać: „wsyp mąkę, wbij jajka, mieszaj". Dla robota jeszcze drobniej: „przesuń ramię o 10 centymetrów, zaciśnij chwytak". Sens zostaje ten sam, zmienia się tylko <b>drobność kroków</b>. Programowanie działa tak samo: człowiek pisze na górze, a tłumacze rozdrabniają to coraz bardziej, aż zostaną kroki tak proste, że umie je wykonać garstka przełączników.</p>
+  </div>
+
+  <div class="widget">
+    <p class="wt">To samo polecenie na pięciu poziomach. Najedź na kolorowy fragment, żeby zobaczyć jego odpowiedniki</p>
+
+    <div class="lvl">
+      <h3>1. Po ludzku<small>to rozumiesz Ty</small></h3>
+      <div class="human">
+        <span class="part" data-p="pos">Weź pozycję ziarnka</span>, <span class="part" data-p="add">dodaj do niej</span> <span class="part" data-p="vel">jego prędkość</span> i <span class="part" data-p="sto">zapisz wynik jako nową pozycję</span>.
+      </div>
+    </div>
+
+    <div class="lvl">
+      <h3>2. Python<small>język dla ludzi</small></h3>
+      <div>
+        <div class="code"><span class="ln"><span class="part" data-p="sto">pozycja =</span> <span class="part" data-p="pos">pozycja</span> <span class="part" data-p="add">+</span> <span class="part" data-p="vel">predkosc</span></span></div>
+        <p class="tr">Czytaj od prawej strony znaku równości: weź to, co kryje się pod nazwą „pozycja", dodaj to, co pod nazwą „predkosc", a wynik zapisz z powrotem pod nazwą „pozycja". Znak równości znaczy tu „zapisz", nie „jest równe".</p>
+      </div>
+    </div>
+
+    <div class="lvl">
+      <h3>3. C++<small>język bliżej sprzętu; w nim napisany jest Blender</small></h3>
+      <div>
+        <div class="two">
+          <div class="code"><span class="ln">float pozycja;</span></div><p>Zarezerwuj skrytkę na liczbę z przecinkiem i nazwij ją „pozycja".</p>
+          <div class="code"><span class="ln">float predkosc;</span></div><p>Zarezerwuj drugą taką skrytkę i nazwij ją „predkosc".</p>
+          <div class="code"><span class="ln"><span class="part" data-p="sto">pozycja =</span> <span class="part" data-p="pos">pozycja</span> <span class="part" data-p="add">+</span> <span class="part" data-p="vel">predkosc</span>;</span></div><p>To samo co w Pythonie.</p>
+        </div>
+        <p class="tr">Nowość: trzeba z góry powiedzieć, <b>jakiego rodzaju</b> liczba leży w każdej skrytce (słowo „float" znaczy „liczba z przecinkiem"). Dzięki temu tłumacz od razu wie, ile miejsca zarezerwować i którego układu liczącego użyć. Python zgaduje to sam w trakcie działania, co jest wygodne, ale wolniejsze.</p>
+      </div>
+    </div>
+
+    <div class="lvl">
+      <h3>4. Asembler<small>pojedyncze polecenia procesora, zapisane słowami</small></h3>
+      <div>
+        <div class="two">
+          <div class="code"><span class="ln"><span class="part" data-p="pos">WEŹ 12</span></span></div><p>Weź na podręczną tabliczkę liczbę ze skrytki 12 (tam leży pozycja).</p>
+          <div class="code"><span class="ln"><span class="part" data-p="add">DODAJ</span> <span class="part" data-p="vel">13</span></span></div><p>Dodaj do liczby na tabliczce liczbę ze skrytki 13 (tam leży prędkość).</p>
+          <div class="code"><span class="ln"><span class="part" data-p="sto">ZAPISZ 12</span></span></div><p>Zapisz to, co jest na tabliczce, z powrotem do skrytki 12.</p>
+        </div>
+        <p class="tr">Jedna linijka Pythona rozpadła się na trzy. Nazwy zniknęły: zamiast „pozycja" jest numer skrytki. Każda linijka to jedno <span class="t" data-t="polecenie">polecenie</span>, które procesor umie wykonać za jednym zamachem.</p>
+      </div>
+    </div>
+
+    <div class="lvl">
+      <h3>5. Kod maszynowy<small>to naprawdę leży w pamięci</small></h3>
+      <div>
+        <div class="two">
+          <div class="code mc"><span class="ln"><span class="part" data-p="pos"><b>0001</b> <i>1100</i></span></span></div><p><b>0001</b> to numer polecenia „weź". <b>1100</b> to liczba 12 zapisana zerami i jedynkami.</p>
+          <div class="code mc"><span class="ln"><span class="part" data-p="add"><b>0010</b></span> <span class="part" data-p="vel"><i>1101</i></span></span></div><p><b>0010</b> to numer polecenia „dodaj". <b>1101</b> to liczba 13.</p>
+          <div class="code mc"><span class="ln"><span class="part" data-p="sto"><b>0011</b> <i>1100</i></span></span></div><p><b>0011</b> to numer polecenia „zapisz". <b>1100</b> to znowu 12.</p>
+        </div>
+        <p class="tr">Asembler i <span class="t" data-t="maszynowy">kod maszynowy</span> to to samo, tylko inaczej zapisane: słowo „WEŹ" jest dla człowieka, a „0001" dla procesora. Pierwsze cztery <span class="t" data-t="bit">bity</span> mówią <b>co zrobić</b>, kolejne cztery <b>z którą skrytką</b>.</p>
+      </div>
+    </div>
+    <div class="say" id="say">Najedź myszką na dowolny kolorowy fragment powyżej.</div>
+  </div>
+
+  <section>
+    <details class="box quiz">
+      <summary>Program leży w pamięci jako liczby. Dane ziarnka też leżą w pamięci jako liczby. Czym się więc różnią?</summary>
+      <p>Niczym, jeśli patrzeć na same skrytki. „0001 1100" może być poleceniem „weź ze skrytki 12" albo zwykłą liczbą 28. O tym, czym jest, decyduje wyłącznie to, <b>jak procesor jej użyje</b>: jeśli wskaże ją jako następne polecenie do wykonania, jest poleceniem. To jedna z najważniejszych idei w całej informatyce: program to też dane.</p>
+    </details>
+
+    <h2>Kto to tłumaczy: dwa rodzaje tłumaczy</h2>
+    <p>Skoro procesor rozumie tylko poziom piąty, ktoś musi przełożyć to, co napisał człowiek. Robi to inny program. Są dwa podejścia:</p>
+    <ul>
+      <li><b><span class="t" data-t="kompilator">Kompilator</span></b> jest jak tłumacz książek. Bierze cały tekst, przekłada go w całości, zanim ktokolwiek zacznie czytać, i oddaje gotowy przekład. Potem tłumacz nie jest już potrzebny. Tak działa C++.</li>
+      <li><b><span class="t" data-t="interpreter">Interpreter</span></b> jest jak tłumacz na żywo podczas rozmowy. Słucha jednego zdania, tłumaczy, czeka na następne. Jeśli to samo zdanie pada tysiąc razy, tłumaczy je tysiąc razy. Tak działają Python i R.</li>
+    </ul>
+
+    <div class="widget">
+      <p class="wt">Wyścig: te same trzy polecenia dla 6 ziaren</p>
+      <div class="race">
+        <div class="lane"><b>Kompilator: najpierw wszystko tłumaczy, potem tylko wykonuje</b><div class="track" id="laneC"></div></div>
+        <div class="lane"><b>Interpreter: tłumaczy każde polecenie tuż przed wykonaniem, za każdym razem od nowa</b><div class="track" id="laneI"></div></div>
+      </div>
+      <div class="legend"><span><i style="background:var(--off)"></i>tłumaczy</span><span><i style="background:var(--on)"></i>wykonuje</span></div>
+      <div class="controls">
+        <button class="btn primary" id="race">Start</button>
+        <label class="sl">Liczba ziaren <input type="range" id="grains" min="1" max="20" value="6"> <span class="num" id="gn">6</span></label>
+      </div>
+      <div class="say" id="raceSay">Naciśnij Start. Każdy kwadracik to jedna jednostka czasu.</div>
+    </div>
+
+    <details class="box quiz">
+      <summary>W Pythonie i R często słyszy się radę: „nie pisz pętli, używaj działań na całych kolumnach". Skąd się to bierze?</summary>
+      <p>Pętla napisana w Pythonie lub R jest tłumaczona na żywo przy każdym obrocie, jak w dolnym torze wyścigu. Gdy zamiast tego wywołujesz jedno działanie na całej kolumnie (na przykład w NumPy, pandas czy na wektorze w R), pętla i tak się wykonuje, ale <b>w środku</b>, w kodzie dawno przetłumaczonym przez kompilator. Tłumacz na żywo odzywa się raz, a nie milion razy. Z tego samego powodu Blender pisze się w C++, a Pythona używa się w nim tylko do wydawania poleceń z góry.</p>
+    </details>
+
+    <div class="box key">
+      <span class="tag">Zapamiętaj</span>
+      <p>Między Twoim kodem a sprzętem nie ma żadnej magii, są tylko kolejne przekłady na coraz drobniejsze kroki. Na samym dole zostają polecenia w rodzaju „weź liczbę ze skrytki", „dodaj", „zapisz do skrytki", zapisane jako grupy bitów.</p>
+    </div>
+
+    <div class="box scale">
+      <span class="tag">Skala</span>
+      <p>Prawdziwy procesor zna nie trzy, ale kilkaset różnych poleceń, a jedno polecenie zajmuje od jednego do kilkunastu bajtów. Program Blendera po przetłumaczeniu to kilkaset milionów bajtów kodu maszynowego. Jedna linijka Pythona potrafi uruchomić tysiące poleceń procesora.</p>
+    </div>
+
+    <details class="box simpl">
+      <summary>Co tu uprościłem</summary>
+      <p>Poziomy 4 i 5 pokazują <b>zabawkowy procesor</b>, który sam zbudujesz i uruchomisz w rozdziale „Procesor". Ma tylko kilka poleceń i 16 skrytek pamięci. W prawdziwym komputerze te same trzy kroki wyglądają podobnie, tylko nazwy są mniej przyjazne:</p>
+      <div class="code"><span class="ln">movss xmm0, [pozycja]    <span class="cm">weź pozycję na podręczną tabliczkę</span></span><span class="ln">addss xmm0, [predkosc]   <span class="cm">dodaj do niej prędkość</span></span><span class="ln">movss [pozycja], xmm0    <span class="cm">zapisz wynik z powrotem</span></span></div>
+      <p>Poza tym granica między tłumaczami nie jest ostra: nowoczesne interpretery potrafią w trakcie działania skompilować najczęściej powtarzane fragmenty.</p>
+    </details>
+  </section>
+</main>
+<script type="module" src="../js/chapters/a3.js"></script>
+</body>
+</html>

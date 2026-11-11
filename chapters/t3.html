@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Procesor · Jak działa komputer</title>
+<script src="../js/theme.js"></script>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body data-chapter="t3">
+<main>
+  <p class="lead">To jest rozdział, w którym pada odpowiedź na pytanie „skąd sprzęt wie, co ma robić". Krótko: nie wie. Robi w kółko trzy te same czynności, a wszystko inne wynika z tego, co leży w pamięci.</p>
+
+  <div class="frames">
+    <div><b>Skąd przychodzimy</b><p>Z pamięci, w której leżą obok siebie program i liczby ziaren.</p></div>
+    <div><b>Co tu zobaczysz</b><p>Mały procesor, który tyknięcie po tyknięciu wykonuje program przesuwający dwa ziarnka.</p></div>
+    <div><b>Dokąd schodzimy</b><p>Do wnętrza procesora: jak z przełączników powstaje dodawanie.</p></div>
+  </div>
+
+  <div class="box analogy">
+    <span class="tag">Analogia</span>
+    <p>Wyobraź sobie bardzo posłusznego, bardzo szybkiego pracownika. Ma przed sobą ścianę skrytek, <b>palec</b>, którym wskazuje jedną z nich, i <b>podręczną tabliczkę</b>, na której mieści się jedna liczba. Zna tylko jedną procedurę:</p>
+    <ol>
+      <li><b>Pobierz.</b> Przeczytaj karteczkę ze skrytki, którą wskazuje palec, i przesuń palec o jedną skrytkę dalej.</li>
+      <li><b>Odczytaj.</b> Zobacz, jakie polecenie jest na karteczce i której skrytki dotyczy.</li>
+      <li><b>Wykonaj.</b> Zrób to. I wróć do punktu pierwszego.</li>
+    </ol>
+    <p>Pracownik nie wie, po co to robi. Nie wie, co to piasek. Rytm wybija mu <span class="t" data-t="zegar">zegar</span>, jak dyrygent: jedno tyknięcie, jedna czynność.</p>
+  </div>
+
+  <div class="widget">
+    <p class="wt">Zabawkowy procesor: 16 skrytek pamięci, 3 czynności w kółko</p>
+    <div id="cpu"></div>
+  </div>
+
+  <section>
+    <h2>Co warto tu zauważyć</h2>
+    <p>Przeklikaj jedno pełne okrążenie programu (21 tyknięć) po jednym tyknięciu i czytaj opisy. Potem włącz odtwarzanie i podkręć tempo.</p>
+    <ul>
+      <li><b>Procesor nigdy nie „patrzy w przód".</b> W każdej chwili zna tylko jedno polecenie: to, które właśnie pobrał. Nie wie, co będzie dalej, ani że to pętla.</li>
+      <li><b>Ten sam sumator obsługuje oba ziarnka.</b> Polecenie DODAJ pojawia się dwa razy, raz dla ziarnka 1 i raz dla ziarnka 2, ale wykonuje je ten sam układ. Zmieniają się tylko liczby, które do niego wchodzą.</li>
+      <li><b>Polecenie SKOCZ robi z listy pętlę.</b> Po prostu ustawia palec z powrotem na skrytkę 0. Każde okrążenie to jedna klatka symulacji.</li>
+      <li><b>Program i dane leżą w tej samej pamięci.</b> Skrytki od 0 do 6 i od 12 do 15 niczym się fizycznie nie różnią.</li>
+    </ul>
+
+    <div class="box key">
+      <span class="tag">Odpowiedź na główne pytanie</span>
+      <p>Sprzęt nie wie, co robić, w żadnym „rozumnym" sensie. Bity bieżącego polecenia to przewody z napięciem, które przestawiają zwrotnice wewnątrz procesora: przy bitach 0001 otwiera się droga z pamięci na tabliczkę, przy 0010 włącza się sumator, przy 0011 otwiera się droga z tabliczki do pamięci. Polecenie <b>dosłownie jest</b> ustawieniem przełączników na jedno tyknięcie zegara. Jak to wygląda od środka, zobaczysz w następnym rozdziale.</p>
+    </div>
+
+    <details class="box quiz">
+      <summary>Zmień skrytkę 13 (prędkość ziarnka 1) na większą liczbę i puść program. Co się zmieniło w procesorze?</summary>
+      <p>W procesorze nic. Te same polecenia, w tej samej kolejności, ten sam sumator. Zmieniła się jedna liczba w pamięci i przez to ziarnko 1 przesuwa się szybciej. To dobra ilustracja podziału ról: sprzęt jest zawsze taki sam, o zachowaniu decydują liczby w pamięci.</p>
+    </details>
+
+    <details class="box quiz">
+      <summary>Co by się stało, gdyby ostatnie polecenie brzmiało SKOCZ 12 zamiast SKOCZ 0? (Zaznacz skrytkę 6 i dodawaj 1, aż zobaczysz SKOCZ 12.)</summary>
+      <p>Palec stanąłby na skrytce 12, w której leży pozycja ziarnka, a procesor spróbowałby ją wykonać jak polecenie. Nie ma jak sprawdzić, że to „tylko dane". Pierwsze cztery bity potraktuje jak numer polecenia, ostatnie jak numer skrytki, i zrobi, co z tego wyjdzie. Tak wyglądają od środka zawieszenia i awarie programów, a celowe doprowadzenie do takiej sytuacji to klasyczna metoda włamań: napastnik podsuwa dane, które procesor omyłkowo wykona jako program.</p>
+    </details>
+
+    <details class="box quiz">
+      <summary>Puść program na długo. Co się dzieje z ziarnkiem, gdy jego pozycja przekroczy 255?</summary>
+      <p>Wraca na początek. Tabliczka ma osiem bitów, więc największa liczba to 255. Gdy sumator dostaje wynik większy, dziewiąty bit przepada i zostaje reszta. To to samo przepełnienie, które widziałeś przy ośmiu lampkach.</p>
+    </details>
+
+    <div class="box scale">
+      <span class="tag">Skala</span>
+      <p>Zegar tego zabawkowego procesora tyka tak szybko, jak klikasz. Zegar prawdziwego tyka około czterech–pięciu <b>miliardów</b> razy na sekundę. Jedno tyknięcie trwa wtedy tyle, ile światło potrzebuje na przebycie około sześciu centymetrów. Nowoczesny procesor robi przy tym kilka poleceń na jedno tyknięcie i ma kilka–kilkanaście rdzeni, czyli osobnych „pracowników" działających naraz.</p>
+    </div>
+
+    <details class="box simpl">
+      <summary>Co tu uprościłem</summary>
+      <p>Prawdziwy procesor ma kilkanaście–kilkadziesiąt tabliczek zamiast jednej, zna setki poleceń, a jego liczby mają 64 bity, nie 8. Nie czeka też z pobraniem następnego polecenia, aż skończy bieżące: pracuje jak taśma produkcyjna, na której kilkanaście poleceń jest naraz w różnych fazach, a nawet zgaduje, którą drogą pójdzie program, i liczy na zapas. Zasada trzech czynności w kółko zostaje jednak ta sama. Sam program jest też bardzo uproszczony: nie ma grawitacji ani podłogi, tylko „dodaj prędkość do pozycji".</p>
+    </details>
+  </section>
+</main>
+<script type="module" src="../js/chapters/t3.js"></script>
+</body>
+</html>

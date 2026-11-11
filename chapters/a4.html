@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Z powrotem na ekran · Jak działa komputer</title>
+<script src="../js/theme.js"></script>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  .mix { display: grid; grid-template-columns: auto 1fr auto; gap: 6px 12px; align-items: center; font-size: .9rem; max-width: 420px; }
+  .mix input { width: 100%; }
+  .far { width: 110px; height: 110px; border-radius: 14px; border: 1px solid var(--line); }
+</style>
+</head>
+<body data-chapter="a4">
+<main>
+  <p class="lead">Byliśmy na samym dnie, przy elektronach. Procesor policzył już nowe liczby ziarnka i odłożył je do pamięci. Ale liczby w pamięci to jeszcze nie obraz. Wracamy na powierzchnię: jak sześć liczb staje się świecącą kropką, którą widzisz.</p>
+
+  <div class="frames">
+    <div><b>Skąd przychodzimy</b><p>Z pamięci, w której leżą świeżo policzone pozycje wszystkich ziaren.</p></div>
+    <div><b>Co tu zobaczysz</b><p>Trzy przekłady: z przestrzeni na płaski obraz, z obrazu na kratki, z kratek na światło.</p></div>
+    <div><b>Dokąd idziemy</b><p>Do Twojego oka. A potem na podsumowujący przelot przez wszystkie warstwy.</p></div>
+  </div>
+
+  <section>
+    <h2>Krok pierwszy: z przestrzeni na płaski obraz</h2>
+    <p>Ziarnko ma pozycję w przestrzeni (trzy liczby), a ekran jest płaski. Komputer musi więc dla każdego ziarnka odpowiedzieć na pytanie: <b>w którym miejscu ekranu je narysować i jak duże?</b> Robi to tak, jak działa aparat fotograficzny albo Twoje oko: rzeczy dalsze wypadają bliżej środka obrazu i są mniejsze.</p>
+
+    <div class="widget">
+      <p class="wt">Wirtualna kamera: po lewej widok z boku, po prawej to, co trafia na ekran</p>
+      <canvas class="c2d" id="proj"></canvas>
+      <div class="controls">
+        <label class="sl">Odległość ziarnka <input type="range" id="dist" min="15" max="100" value="40"></label>
+        <label class="sl">Wysokość ziarnka <input type="range" id="hei" min="-100" max="100" value="60"></label>
+      </div>
+      <div class="say" id="projSay"></div>
+    </div>
+
+    <p>Cała „perspektywa" to w gruncie rzeczy jedno dzielenie: wysokość ziarnka podzielona przez jego odległość daje miejsce na ekranie. Do tego dochodzi kilka mnożeń i dodawań, które uwzględniają, gdzie stoi kamera i w którą stronę patrzy. Programiści zapisują te działania w zgrabnych tabelkach liczb zwanych macierzami, ale w środku to wciąż te same działania, które wykonywał sumator.</p>
+
+    <h2>Krok drugi: z obrazu na kratki</h2>
+    <p>Ekran nie jest gładką kartką. To szachownica <span class="t" data-t="piksel">pikseli</span>, a każdy może mieć tylko jeden kolor. Okrągłego ziarnka nie da się więc narysować dokładnie. Komputer sprawdza po kolei każdą kratkę: <b>czy jej środek leży wewnątrz ziarnka?</b> Jeśli tak, kratka dostaje kolor piasku. Przeciągnij ziarnko myszką i zmieniaj gęstość kratek.</p>
+
+    <div class="widget">
+      <p class="wt">Ziarnko na szachownicy pikseli. Przeciągaj ziarnko, najedź na kratkę</p>
+      <div class="row">
+        <div class="grow" style="flex-basis:340px; max-width:440px"><canvas class="c2d" id="grid" style="touch-action:none; cursor:grab"></canvas></div>
+        <div class="grow" style="flex-basis:280px">
+          <label class="sl">Gęstość kratek <input type="range" id="res" min="6" max="48" value="14"> <span class="num" id="resTxt"></span></label>
+          <div class="say" id="gridSay"></div>
+        </div>
+      </div>
+    </div>
+
+    <p>Zwróć uwagę na opis kratki po prawej. Każdy piksel to <b>trzy liczby</b> (ile czerwonego, zielonego i niebieskiego), a wszystkie piksele leżą w pamięci jeden za drugim, wiersz po wierszu. Ten kawałek pamięci nazywa się <span class="t" data-t="framebuffer">buforem obrazu</span>. To znowu ściana ponumerowanych skrytek, dokładnie jak przy liczbach ziaren. Narysować ziarnko znaczy po prostu: wpisać inne liczby do kilku skrytek.</p>
+
+    <details class="box quiz">
+      <summary>Monitor 4K ma około ośmiu milionów pikseli. Ile liczb mieści jego bufor obrazu i ile z nich trzeba przesłać do monitora w ciągu sekundy?</summary>
+      <p>Osiem milionów pikseli po trzy liczby to około 25 milionów liczb na jeden obraz. Przy 60 obrazach na sekundę kablem do monitora płynie półtora miliarda liczb na sekundę, a każda to osiem bitów. Dlatego kable do monitorów muszą być porządne.</p>
+    </details>
+
+    <h2>Kto to wszystko liczy: karta graficzna</h2>
+    <div class="box analogy">
+      <span class="tag">Analogia</span>
+      <p>Procesor jest jak jeden znakomity malarz, który umie wszystko, ale maluje jedną kreskę naraz. <span class="t" data-t="gpu">Karta graficzna</span> jest jak stadion ludzi, z których każdy dostał jedną kratkę i prostą instrukcję „pokoloruj według numerka". Nikt z nich nie jest geniuszem, ale razem malują cały obraz w jednej chwili. Rysowanie to właśnie takie zadanie: miliony pikseli, dla każdego ten sam prosty rachunek, żaden nie zależy od sąsiada.</p>
+    </div>
+    <p>Karta graficzna to więc drugi procesor, zbudowany z tych samych tranzystorów i bramek, tylko inaczej zorganizowany: zamiast kilkunastu potężnych rdzeni ma tysiące prostych. Z tego samego powodu świetnie nadaje się do sztucznej inteligencji, gdzie też trzeba wykonać ogromną liczbę takich samych mnożeń.</p>
+    <p>Jeszcze jedno: program taki jak Blender nie pisze do bufora obrazu sam. Prosi o to <span class="t" data-t="os">system operacyjny</span>, który pilnuje, żeby okna różnych programów nie zamazywały się nawzajem, a ten przekazuje polecenia <span class="t" data-t="sterownik">sterownikowi</span>, czyli programowi-tłumaczowi znającemu konkretny model karty graficznej.</p>
+
+    <h2>Krok trzeci: z liczb na światło</h2>
+    <p>Bufor obrazu wędruje kablem do monitora, piksel po pikselu, jako długi ciąg bitów. A w monitorze każdy piksel to tak naprawdę <b>trzy maleńkie lampki</b> obok siebie: czerwona, zielona i niebieska. Liczba od 0 do 255 mówi, jak mocno każda ma świecić. Lampki są tak małe i tak blisko siebie, że oko nie widzi ich osobno, tylko zlewa ich światło w jeden kolor.</p>
+
+    <div class="widget">
+      <p class="wt">Piksele w dużym powiększeniu</p>
+      <div class="row">
+        <div class="grow" style="flex-basis:340px; max-width:460px"><canvas class="c2d" id="sub"></canvas><p class="hint">Tak wygląda kawałek ekranu pod lupą.</p></div>
+        <div class="grow" style="flex-basis:260px">
+          <div class="mix">
+            <span>czerwona</span><input type="range" id="cr" min="0" max="255" value="214"><span class="num" id="tr"></span>
+            <span>zielona</span><input type="range" id="cg" min="0" max="255" value="164"><span class="num" id="tg"></span>
+            <span>niebieska</span><input type="range" id="cb" min="0" max="255" value="85"><span class="num" id="tb"></span>
+          </div>
+          <div class="controls">
+            <button class="btn" data-c="214,164,85">Piasek</button>
+            <button class="btn" data-c="255,255,0">Żółty</button>
+            <button class="btn" data-c="255,255,255">Biały</button>
+            <button class="btn" data-c="0,0,0">Czarny</button>
+          </div>
+          <p class="hint" style="margin-top:14px">A tak to widać z normalnej odległości:</p>
+          <div class="far" id="far"></div>
+        </div>
+      </div>
+    </div>
+
+    <details class="box quiz">
+      <summary>Kliknij „Żółty". W pikselu nie ma żółtej lampki. Skąd więc bierze się żółty kolor?</summary>
+      <p>Świecą naraz czerwona i zielona, a niebieska jest zgaszona. Oko ma trzy rodzaje czujników koloru i mieszanka czerwonego z zielonym pobudza je tak samo jak prawdziwe żółte światło, więc mózg nie potrafi ich odróżnić. Ekran nie pokazuje „prawdziwych" kolorów. Pokazuje trzy, które wystarczają, żeby oszukać ludzkie oko.</p>
+    </details>
+
+    <p>I tu koło się zamyka. O jasności każdej z tych lampek decyduje <b>tranzystor</b> umieszczony tuż za nią, w samym ekranie. Liczba z bufora obrazu zamienia się na napięcie, napięcie przymyka albo otwiera tranzystor, a ten przepuszcza więcej lub mniej światła.</p>
+
+    <div class="box key">
+      <span class="tag">Cała droga w jednym akapicie</span>
+      <p>Ziarnko piasku to sześć liczb w pamięci. Program, przetłumaczony na proste polecenia, każe procesorowi wziąć te liczby, dodać, porównać i zapisać z powrotem. Procesor robi to, przepuszczając bity przez bramki. Bramki to tranzystory, a tranzystor przewodzi, gdy pod jego bramką zbiorą się elektrony. Nowe liczby karta graficzna przelicza na miejsca i kolory pikseli. Te wędrują do ekranu, gdzie inne tranzystory zamieniają je na światło. Twój mózg skleja kilkadziesiąt takich obrazów na sekundę w sypiący się piasek. <b>Piasek istnieje tylko na samej górze, w Twojej głowie, i w zamyśle programisty. Wszystko pomiędzy to liczby, a pod liczbami elektrony.</b></p>
+    </div>
+
+    <div class="box scale">
+      <span class="tag">Skala</span>
+      <p>Na ekranie Full HD jest ponad sześć milionów lampek, na ekranie 4K prawie 25 milionów, i za każdą stoi własny tranzystor. Karta graficzna w dobrym komputerze ma kilkadziesiąt miliardów tranzystorów i tysiące jednostek liczących. Od Twojego ruchu myszką do zmiany światła na ekranie mija zwykle kilkadziesiąt tysięcznych części sekundy.</p>
+    </div>
+
+    <details class="box simpl">
+      <summary>Co tu uprościłem</summary>
+      <p>Prawdziwy obraz 3D nie składa się z kulek, tylko z milionów trójkątów, a kolor każdego piksela zależy jeszcze od światła, cieni i materiału, co wymaga dalszych rachunków. Krawędzie wygładza się, nadając brzegowym pikselom kolor pośredni, żeby nie było widać schodków. Opisałem ekran ciekłokrystaliczny, w którym tranzystor steruje przesłoną przed stałym podświetleniem; w ekranach typu OLED każda lampka świeci sama. No i piksele nie trafiają na ekran prosto z programu: po drodze system składa obraz z okien wielu programów naraz.</p>
+    </details>
+  </section>
+</main>
+<script type="module" src="../js/chapters/a4.js"></script>
+</body>
+</html>
